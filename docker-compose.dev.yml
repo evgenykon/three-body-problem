@@ -1,6 +1,6 @@
 services:
   3body:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile.dev
     ports:

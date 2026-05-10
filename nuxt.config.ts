@@ -1,49 +1,46 @@
+import tailwindcss from "@tailwindcss/vite";
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  ssr: true,
-  compatibilityDate: '2025-07-15',
+  compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  experimental: {
-    appManifest: false,
+
+  modules: ["@nuxtjs/color-mode", "motion-v/nuxt", "@vueuse/nuxt", "@nuxt/icon", "@nuxt/fonts"],
+
+  imports: {
+    imports: [
+      {
+        from: "tailwind-variants",
+        name: "tv",
+      },
+      {
+        from: "tailwind-variants",
+        name: "VariantProps",
+        type: true,
+      },
+    ],
   },
-  modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint', '@pinia/nuxt'],
-  routeRules: {
-    // '/**': { ssr: false },
-    '/': { ssr: true },
+
+  colorMode: {
+    storageKey: "app-color-mode",
+    classSuffix: "",
   },
-  app: {
-    head: {
-      htmlAttrs: { lang: 'ru' },
-      meta: [
-        { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      ],
-      link: [
-      ],
+
+  icon: {
+    clientBundle: {
+      scan: true,
+      sizeLimitKb: 0,
     },
+
+    mode: "svg",
+    class: "shrink-0",
+    fetchTimeout: 2000,
+    serverBundle: "local",
   },
-  runtimeConfig: {
-    public: {
-      baseUrl: process.env.NUXT_PUBLIC_BASE_URL,
-    },
-  },
+
+  css: ["~/assets/css/tailwind.css"],
+
   vite: {
-    server: {
-      hmr: {
-        host: 'localhost',
-        clientPort: 8080,
-        protocol: 'ws',
-      },
-    },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          additionalData: '@use "~/assets/scss/fonts"; @use "~/assets/scss/variables" as *;',
-        },
-      },
-    },
-    optimizeDeps: {
-      include: ['axios', 'socket.io-client', '@fingerprintjs/fingerprintjs', 'lucide-vue-next', 'katex', 'vue-konva'],
-    },
+    plugins: [tailwindcss()],
   },
 });

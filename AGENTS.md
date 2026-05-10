@@ -3,6 +3,7 @@
 This is a Nuxt 4 application built with Vue 3 and TypeScript. The project implements a solution for simulating the three-body problem in physics.
 
 ## Project Structure
+
 - **app/**: Contains the root App.vue component
 - **app/assets/**: Static assets including SCSS stylesheets
 - **app/components/**: Vue components organized by feature
@@ -20,6 +21,7 @@ This is a Nuxt 4 application built with Vue 3 and TypeScript. The project implem
 - **ui-thing.config.ts**: UI Thing library configuration
 
 ## Key Dependencies
+
 - **nuxt^4.4.2**: Framework for Vue.js applications
 - **vue^3.5.30**: Reactive UI library
 - **vue-router^4.6.4**: Vue Router for navigation
@@ -32,6 +34,7 @@ This is a Nuxt 4 application built with Vue 3 and TypeScript. The project implem
 - **@nuxt/eslint^1.15.2**: Linting integration
 
 ## Development Dependencies
+
 - **@nuxt/test-utils^4.0.0**: Nuxt testing utilities
 - **@types/katex^0.16.8**: TypeScript definitions for KaTeX
 - **@types/markdown-it^14.1.2**: TypeScript definitions for markdown-it
@@ -44,21 +47,25 @@ This is a Nuxt 4 application built with Vue 3 and TypeScript. The project implem
 - **vitest^4.0.18**: Vite-based test runner
 
 ## Development
+
 All npm operations must be performed within the Docker container using docker-compose or docker commands.
 
 Example:
+
 - Instead of: `npm install`
-- Use: `docker-compose run --rm 3body pnpm install`
+- Use: `docker-compose run --rm 3body yarn install`
 
 This ensures consistent environments and prevents local machine pollution.
 
 ## Development Workflow
-- Do not use git commands: commit, push directly
+
+- Do not use git commands at all
 - Use make commands if available (see Makefile)
 - If no appropriate make command exists, create one in the Makefile
 - All development work should be done through the provided make commands
 
 Available make commands:
+
 - `make build`: Build the Docker containers
 - `make dev`: Start the development environment
 - `make down`: Stop and remove containers
