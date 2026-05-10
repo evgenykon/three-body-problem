@@ -20,6 +20,7 @@
     "lucide-vue-next": "^1.0.0",
     "markdown-it": "^14.1.1",
     "nuxt": "^4.4.2",
+    "ui-thing": "^0.2.8",
     "vue": "^3.5.30",
     "vue-router": "^4.6.4"
   },
