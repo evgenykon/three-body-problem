@@ -51,3 +51,15 @@ Example:
 - Use: `docker-compose run --rm 3body pnpm install`
 
 This ensures consistent environments and prevents local machine pollution.
+
+## Development Workflow
+- Do not use git commands: commit, push directly
+- Use make commands if available (see Makefile)
+- If no appropriate make command exists, create one in the Makefile
+- All development work should be done through the provided make commands
+
+Available make commands:
+- `make build`: Build the Docker containers
+- `make dev`: Start the development environment
+- `make down`: Stop and remove containers
+- `make run`: Run a shell in the development container
