@@ -7,18 +7,9 @@ export default defineNuxtConfig({
     appManifest: false,
   },
   modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint', '@pinia/nuxt'],
-  // Landing is the only route that benefits from SSR (SEO, meaningful first
-  // paint for logged-out visitors). Every other page is gated by session and
-  // uses browser-only APIs (fingerprint, socket.io, KaTeX), so SSR would
-  // produce a flash-of-unauthenticated content and extra hydration churn —
-  // keep them SPA-rendered.
   routeRules: {
     // '/**': { ssr: false },
     '/': { ssr: true },
-    // '/api/**': {},
-    // CSR only - admin живёт под basic auth nginx, SSR-fetch ходит мимо nginx
-    // прямо на api контейнер и не получает auth header -> 403 от requireAdmin.
-    // '/admin/**': { ssr: false },
   },
   app: {
     head: {
