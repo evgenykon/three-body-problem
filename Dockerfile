@@ -1,14 +1,25 @@
-FROM node:20
+# Dockerfile for production
 
+# ---- Base Stage ----
+FROM node:24-alpine AS base
 WORKDIR /app
-COPY package*.json ./
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
-RUN npm install -g bun
+# ---- Dependencies Stage ----
+FROM base AS deps
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
-COPY ./app .
+# ---- Build Stage ----
+FROM base AS build
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN pnpm build
 
-
-
+# ---- Production Stage ----
+FROM node:24-alpine AS production
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=build /app/.output .
 EXPOSE 3000
-
-CMD ["bun", "index.ts"]
+CMD ["node", "server/index.mjs"]
