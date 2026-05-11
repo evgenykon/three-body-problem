@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { Engine2D, createDefaultBodies2D, type Body, type Vector2D } from '~/simulation/Engine'
 
 interface Props {
@@ -22,13 +22,31 @@ const props = withDefaults(defineProps<Props>(), {
 
 const containerRef = ref<HTMLDivElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const hoveredBody = ref<string | null>(null)
 
 const engine = ref<Engine2D | null>(null)
 const isRunning = ref(false)
 const animationId = ref<number | null>(null)
 const center = ref({ x: 0, y: 0 })
 const scale = ref(1)
+
+interface Particle {
+  x: number
+  y: number
+  vx: number
+  vy: number
+  life: number
+  color: string
+}
+
+const particles = ref<Particle[]>([])
+
+const emit = defineEmits<{
+  (e: 'ready', ctx: CanvasRenderingContext2D, width: number, height: number): void
+  (e: 'bodyClick', body: Body, event: MouseEvent): void
+}>()
+
+let rafId: number | null = null
+const hoveredBody = ref<string | null>(null)
 
 const initEngine = () => {
   engine.value = new Engine2D({
@@ -46,6 +64,73 @@ const resizeCanvas = () => {
     canvasRef.value.width = rect.width
     canvasRef.value.height = rect.height
     center.value = { x: rect.width / 2, y: rect.height / 2 }
+  }
+}
+
+const createExplosion = (x: number, y: number, color: string, count = 30) => {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2
+    const speed = Math.random() * 5 + 2
+    particles.value.push({
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1.0,
+      color
+    })
+  }
+}
+
+const updateParticles = () => {
+  particles.value = particles.value.filter(p => {
+    p.x += p.vx
+    p.y += p.vy
+    p.vx *= 0.98
+    p.vy *= 0.98
+    p.life -= 0.02
+    return p.life > 0
+  })
+}
+
+const drawParticles = (ctx: CanvasRenderingContext2D) => {
+  particles.value.forEach(p => {
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, 3 * p.life, 0, Math.PI * 2)
+    ctx.fillStyle = p.color + Math.floor(p.life * 255).toString(16).padStart(2, '0')
+    ctx.fill()
+  })
+}
+
+const checkCollisions = () => {
+  if (!engine.value) return
+  
+  const bodies = engine.value.getBodies()
+  const toRemove: string[] = []
+  
+  for (let i = 0; i < bodies.length; i++) {
+    for (let j = i + 1; j < bodies.length; j++) {
+      const a = bodies[i]
+      const b = bodies[j]
+      
+      const dx = a.position.x - b.position.x
+      const dy = a.position.y - b.position.y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      
+      if (dist < (a.radius + b.radius)) {
+        const collX = center.value.x + (a.position.x + b.position.x) / 2 * scale.value
+        const collY = center.value.y + (a.position.y + b.position.y) / 2 * scale.value
+        
+        createExplosion(collX, collY, a.color, 30)
+        createExplosion(collX, collY, b.color, 30)
+        
+        toRemove.push(a.id, b.id)
+      }
+    }
+  }
+  
+  if (toRemove.length > 0) {
+    toRemove.forEach(id => engine.value!.removeBody(id))
   }
 }
 
@@ -107,12 +192,9 @@ const draw = () => {
   }
   
   engine.value.getBodies().forEach(body => {
-    // console.log('drawing body', body.id, body.velocity)
     const x = center.value.x + body.position.x * scale.value
     const y = center.value.y + body.position.y * scale.value
     const isHovered = body.id === hoveredBody.value
-    
-    // console.log('hovered:', body.id, isHovered)
     
     if (isHovered) {
       ctx.beginPath()
@@ -138,7 +220,7 @@ const draw = () => {
     ctx.fill()
     
     ctx.font = '11px monospace'
-    ctx.fillStyle = '#888888'
+    ctx.fillStyle = '#aaaaaa'
     ctx.fillText(`(${body.position.x.toFixed(0)}, ${body.position.y.toFixed(0)})`, x + body.radius * scale.value + 8, y - 8)
     
     ctx.font = '10px monospace'
@@ -177,14 +259,17 @@ const draw = () => {
       ctx.fill()
     }
   })
+  
+  updateParticles()
+  drawParticles(ctx)
 }
 
 const step = () => {
   if (engine.value && isRunning.value) {
     engine.value.step()
     checkCollisions()
-    draw()
   }
+  draw()
   animationId.value = requestAnimationFrame(step)
 }
 
@@ -197,46 +282,15 @@ const stop = () => {
 }
 
 const reset = () => {
-  initEngine()
-  draw()
-}
-
-const getBodies = () => engine.value?.getBodies() || []
-
-const checkCollisions = () => {
-  if (!engine.value) return
-  
-  const bodies = engine.value.getBodies()
-  const toRemove: string[] = []
-  
-  for (let i = 0; i < bodies.length; i++) {
-    for (let j = i + 1; j < bodies.length; j++) {
-      const a = bodies[i]
-      const b = bodies[j]
-      
-      const dx = a.position.x - b.position.x
-      const dy = a.position.y - b.position.y
-      const dist = Math.sqrt(dx * dx + dy * dy)
-      
-      if (dist < (a.radius + b.radius)) {
-        toRemove.push(a.id, b.id)
-      }
-    }
-  }
-  
-  if (toRemove.length > 0) {
-    toRemove.forEach(id => engine.value!.removeBody(id))
+  if (engine.value) {
+    engine.value.reset()
+    particles.value = []
   }
 }
 
 const zoom = (delta: number) => {
   scale.value = Math.max(0.1, Math.min(5, scale.value + delta))
-  draw()
 }
-
-const emit = defineEmits<{
-  (e: 'bodyClick', body: Body, event: MouseEvent): void
-}>()
 
 const handleClick = (event: MouseEvent) => {
   if (!canvasRef.value || !engine.value) return
@@ -258,14 +312,10 @@ const handleClick = (event: MouseEvent) => {
   }
 }
 
-let rafId: number | null = null
-
 const handleMouseMove = (event: MouseEvent) => {
-  // console.log('mouse move', event.clientX, event.clientY)
   if (!canvasRef.value || !engine.value) return
   
   const rect = canvasRef.value.getBoundingClientRect()
-  // console.log('canvas rect', rect)
   const mouseX = event.clientX - rect.left
   const mouseY = event.clientY - rect.top
   
@@ -283,7 +333,6 @@ const handleMouseMove = (event: MouseEvent) => {
   
   if (found !== hoveredBody.value) {
     hoveredBody.value = found
-    draw()
   }
 }
 
@@ -303,9 +352,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (animationId.value) {
-    cancelAnimationFrame(animationId.value)
-  }
+  if (rafId) cancelAnimationFrame(rafId)
   window.removeEventListener('resize', resizeCanvas)
 })
 
@@ -325,8 +372,8 @@ defineExpose({
     <canvas 
       ref="canvasRef" 
       class="canvas"
-      @mousemove="handleMouseMove"
       @click="handleClick"
+      @mousemove="handleMouseMove"
     />
   </div>
 </template>
@@ -347,11 +394,5 @@ defineExpose({
   width: 100%;
   height: 100%;
   cursor: crosshair;
-}
-
-.canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
 }
 </style>
