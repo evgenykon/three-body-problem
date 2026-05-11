@@ -5,7 +5,19 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
 
-  modules: ["@nuxtjs/color-mode", "motion-v/nuxt", "@vueuse/nuxt", "@nuxt/icon", "@nuxt/fonts"],
+  future: {
+    compatibilityVersion: 4,
+  },
+
+  modules: [
+    "@nuxtjs/color-mode",
+    "motion-v/nuxt",
+    "@vueuse/nuxt",
+    "@nuxt/icon",
+    "@nuxt/fonts",
+  ],
+
+  components: true,
 
   imports: {
     imports: [
@@ -37,8 +49,6 @@ export default defineNuxtConfig({
     fetchTimeout: 2000,
     serverBundle: "local",
   },
-
-  css: ["~/assets/css/tailwind.css"],
 
 
 });
