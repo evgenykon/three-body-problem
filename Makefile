@@ -8,4 +8,4 @@ down:
 	docker compose -f docker-compose.dev.yml down
 
 run:
-	docker compose -f docker-compose.dev.yml run --rm 3body sh
+	docker compose -f docker-compose.dev.yml run --rm 3body $(cmd)
