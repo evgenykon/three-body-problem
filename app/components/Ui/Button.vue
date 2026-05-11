@@ -1,7 +1,8 @@
 <script setup lang="ts">
 interface Props {
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | 'active' | 'outlined'
   size?: 'default' | 'sm' | 'lg' | 'icon'
+  active?: boolean
   as?: string
 }
 
@@ -16,7 +17,7 @@ withDefaults(defineProps<Props>(), {
   <component
     :is="as"
     class="btn"
-    :class="[`btn--${variant}`, `btn--${size}`]"
+    :class="[`btn--${variant}`, `btn--${size}`, { 'btn--active-state': active }]"
   >
     <slot />
   </component>
@@ -95,6 +96,27 @@ withDefaults(defineProps<Props>(), {
   color: #666;
   text-decoration: underline;
   box-shadow: none;
+}
+
+.btn--active {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.btn--outlined {
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  box-shadow: none;
+}
+.btn--outlined:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.btn--active-state {
+  background: var(--accent) !important;
+  color: var(--accent-foreground) !important;
 }
 
 /* Sizes */

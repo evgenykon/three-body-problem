@@ -1,4 +1,21 @@
 <script setup lang="ts">
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+
+const menuItems = [
+  { page: 'dashboard', label: 'Dashboard' },
+  { page: 'simulation', label: 'Simulation' },
+  { page: 'settings', label: 'Settings' },
+]
+
+const componentItems = [
+  { page: 'buttons', label: 'Buttons' },
+  { page: 'inputs', label: 'Inputs' },
+  { page: 'cards', label: 'Cards' },
+  { page: 'headers', label: 'Headers' },
+  { page: 'labels', label: 'Labels' },
+]
 </script>
 
 <template>
@@ -18,18 +35,25 @@
       <aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r border-border bg-card p-4">
         <UiHeader :level="4">Menu</UiHeader>
         <div class="flex flex-col gap-1 mt-2">
-          <UiButton variant="ghost">Dashboard</UiButton>
-          <UiButton variant="ghost">Simulation</UiButton>
-          <UiButton variant="ghost">Settings</UiButton>
+          <UiButton
+            v-for="item in menuItems"
+            :key="item.page"
+            variant="ghost"
+            :active="route.path === '/' && item.page === 'dashboard'"
+          >
+            {{ item.label }}
+          </UiButton>
         </div>
         
         <UiHeader :level="4" class="mt-4">Components</UiHeader>
         <div class="flex flex-col gap-1 mt-2">
-          <UiButton variant="ghost">Buttons</UiButton>
-          <UiButton variant="ghost">Inputs</UiButton>
-          <UiButton variant="ghost">Cards</UiButton>
-          <UiButton variant="ghost">Headers</UiButton>
-          <UiButton variant="ghost">Labels</UiButton>
+          <UiButton
+            v-for="item in componentItems"
+            :key="item.page"
+            variant="ghost"
+          >
+            {{ item.label }}
+          </UiButton>
         </div>
       </aside>
 

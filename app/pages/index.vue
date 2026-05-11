@@ -2,7 +2,10 @@
 import { ref } from 'vue'
 
 definePageMeta({
-  layout: 'default'
+  layout: 'default',
+  layoutProps: {
+    activePage: 'dashboard'
+  }
 })
 
 const name = ref('')
@@ -33,6 +36,29 @@ const radioOptions = [
 ]
 
 const price = ref('')
+
+const activeTab = ref('general')
+const tabs = [
+  { value: 'general', label: 'General' },
+  { value: 'security', label: 'Security' },
+  { value: 'notifications', label: 'Notifications' },
+  { value: 'advanced', label: 'Advanced' },
+]
+
+const tableColumns = [
+  { key: 'name', label: 'Name' },
+  { key: 'email', label: 'Email' },
+  { key: 'role', label: 'Role', align: 'center' as const },
+  { key: 'status', label: 'Status', align: 'right' as const },
+]
+
+const tableData = [
+  { name: 'John Doe', email: 'john@example.com', role: 'Admin', status: 'Active' },
+  { name: 'Jane Smith', email: 'jane@example.com', role: 'User', status: 'Active' },
+  { name: 'Bob Wilson', email: 'bob@example.com', role: 'Editor', status: 'Inactive' },
+  { name: 'Alice Brown', email: 'alice@example.com', role: 'User', status: 'Active' },
+  { name: 'Charlie Davis', email: 'charlie@example.com', role: 'User', status: 'Pending' },
+]
 </script>
 
 <template>
@@ -44,7 +70,19 @@ const price = ref('')
       </UiHeroSpace>
     </section>
 
+    <section class="mb-8">
+      <UiTabs v-model="activeTab" :tabs="tabs" />
+    </section>
+
     <UiHeader :level="1" class="mb-8">UI Components Demo</UiHeader>
+
+    <section class="mb-8">
+      <UiCard>
+        <UiCardContent>
+          <UiTable :columns="tableColumns" :data="tableData" />
+        </UiCardContent>
+      </UiCard>
+    </section>
 
     <div class="grid grid-cols-2 gap-8">
       <section>
@@ -55,9 +93,11 @@ const price = ref('')
             <UiButton variant="destructive">Destructive</UiButton>
             <UiButton variant="outline">Outline</UiButton>
             <UiButton variant="secondary">Secondary</UiButton>
-            <UiButton variant="ghost">Ghost</UiButton>
-            <UiButton variant="link">Link</UiButton>
-            <UiButton size="sm">Small</UiButton>
+<UiButton variant="ghost">Ghost</UiButton>
+              <UiButton variant="link">Link</UiButton>
+              <UiButton variant="active">Active</UiButton>
+              <UiButton variant="outlined">Outlined</UiButton>
+              <UiButton size="sm">Small</UiButton>
             <UiButton size="lg">Large</UiButton>
           </UiCardContent>
         </UiCard>
