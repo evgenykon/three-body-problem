@@ -8,6 +8,31 @@ definePageMeta({
 const name = ref('')
 const email = ref('')
 const password = ref('')
+const country = ref('')
+const countries = [
+  { value: 'us', label: 'United States' },
+  { value: 'uk', label: 'United Kingdom' },
+  { value: 'ca', label: 'Canada' },
+  { value: 'au', label: 'Australia' },
+  { value: 'de', label: 'Germany' },
+]
+
+const checkboxValue = ref(false)
+const checkboxGroup = ref<string[]>([])
+const checkboxOptions = [
+  { value: 'apple', label: 'Apple' },
+  { value: 'banana', label: 'Banana' },
+  { value: 'orange', label: 'Orange' },
+]
+
+const radioValue = ref('apple')
+const radioOptions = [
+  { value: 'apple', label: 'Apple' },
+  { value: 'banana', label: 'Banana' },
+  { value: 'orange', label: 'Orange' },
+]
+
+const price = ref('')
 </script>
 
 <template>
@@ -41,18 +66,56 @@ const password = ref('')
       <section>
         <UiHeader :level="2" class="mb-4">Inputs</UiHeader>
         <UiCard>
-          <UiCardContent class="space-y-4">
-            <div>
+          <UiCardContent class="form-group">
+            <div class="form-row">
               <UiLabel for="name">Name</UiLabel>
-              <UiInput v-model="name" id="name" placeholder="Enter your name" class="mt-1" />
+              <UiInput v-model="name" id="name" placeholder="Enter your name" />
             </div>
-            <div>
+            <div class="form-row">
               <UiLabel for="email">Email</UiLabel>
-              <UiInput v-model="email" id="email" type="email" placeholder="Enter email" class="mt-1" />
+              <UiInput v-model="email" id="email" type="email" placeholder="Enter email" />
             </div>
-            <div>
+            <div class="form-row">
               <UiLabel for="password">Password</UiLabel>
-              <UiInput v-model="password" id="password" type="password" placeholder="Enter password" class="mt-1" />
+              <UiInput v-model="password" id="password" type="password" placeholder="Enter password" />
+            </div>
+            <div class="form-row">
+              <UiLabel for="country">Country</UiLabel>
+              <UiSelect v-model="country" id="country" :options="countries" placeholder="Select country" />
+            </div>
+          </UiCardContent>
+        </UiCard>
+      </section>
+
+      <section>
+        <UiHeader :level="2" class="mb-4">Form Controls</UiHeader>
+        <UiCard>
+          <UiCardContent class="form-group">
+            <div class="form-row">
+              <UiLabel>Checkbox</UiLabel>
+              <div>
+                <UiCheckbox v-model="checkboxValue" label="I agree to terms" />
+              </div>
+            </div>
+            <div class="form-row">
+              <UiLabel>Checkbox Group</UiLabel>
+              <div>
+                <UiCheckboxGroup v-model="checkboxGroup" :options="checkboxOptions" />
+              </div>
+            </div>
+            <div class="form-row">
+              <UiLabel>Radio Group</UiLabel>
+              <div>
+                <UiRadioGroup v-model="radioValue" :options="radioOptions" />
+              </div>
+            </div>
+            <div class="form-row">
+              <UiLabel>Input with Pre/Post</UiLabel>
+              <div>
+                <UiInputGroup pre="$" post=".00">
+                  <UiInput v-model="price" placeholder="0" />
+                </UiInputGroup>
+              </div>
             </div>
           </UiCardContent>
         </UiCard>

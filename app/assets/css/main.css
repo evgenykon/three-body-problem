@@ -334,3 +334,16 @@ label:has(+ *) label:has(+ *) {
 
 /* Underline offset */
 .underline-offset-4 { text-underline-offset: 4px; }
+
+/* Form spacing */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
