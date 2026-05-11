@@ -4,17 +4,18 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 
 const menuItems = [
-  { page: 'dashboard', label: 'Dashboard' },
-  { page: 'simulation', label: 'Simulation' },
-  { page: 'settings', label: 'Settings' },
+  { page: 'dashboard', label: 'Dashboard', to: '/' },
+  { page: 'demo', label: 'UI Demo', to: '/demo' },
+  // { page: 'simulation', label: 'Simulation' },
+  // { page: 'settings', label: 'Settings' },
 ]
 
-const componentItems = [
-  { page: 'buttons', label: 'Buttons' },
-  { page: 'inputs', label: 'Inputs' },
-  { page: 'cards', label: 'Cards' },
-  { page: 'headers', label: 'Headers' },
-  { page: 'labels', label: 'Labels' },
+const simulations = [
+  { page: '2d-basic', label: '2D basic' },
+  // { page: 'inputs', label: 'Inputs' },
+  // { page: 'cards', label: 'Cards' },
+  // { page: 'headers', label: 'Headers' },
+  // { page: 'labels', label: 'Labels' },
 ]
 </script>
 
@@ -25,9 +26,9 @@ const componentItems = [
         <UiHeader :level="3" as="div">Three Body Problem</UiHeader>
       </div>
       <div class="flex items-center gap-4">
-        <UiButton variant="ghost" size="sm">Docs</UiButton>
-        <UiButton variant="ghost" size="sm">About</UiButton>
-        <UiButton size="sm">Get Started</UiButton>
+<!--        <UiButton variant="ghost" size="sm">Docs</UiButton>-->
+<!--        <UiButton variant="ghost" size="sm">About</UiButton>-->
+<!--        <UiButton size="sm">Get Started</UiButton>-->
       </div>
     </UiNavbar>
 
@@ -45,10 +46,10 @@ const componentItems = [
           </UiButton>
         </div>
         
-        <UiHeader :level="4" class="mt-4">Components</UiHeader>
+        <UiHeader :level="4" class="mt-4">Simulations</UiHeader>
         <div class="flex flex-col gap-1 mt-2">
           <UiButton
-            v-for="item in componentItems"
+            v-for="item in simulations"
             :key="item.page"
             variant="ghost"
           >
