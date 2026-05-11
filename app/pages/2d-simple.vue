@@ -116,6 +116,7 @@ const applyChanges = () => {
     <UiBottomDrawer ref="drawerRef" :title="selectedBody?.id || 'Body Details'">
       <div v-if="selectedBody" class="drawer-content">
         <div class="cards-row">
+
           <UiCard class="info-card">
             <UiCardContent class="card-content">
               <div class="section-title">Current Values</div>
@@ -185,8 +186,7 @@ const applyChanges = () => {
             <UiButton variant="outline" @click="drawerRef?.close()">Close</UiButton>
           </div>
         </div>
-        
-        </div>
+
       </div>
     </UiBottomDrawer>
   </UiContainer>
@@ -257,7 +257,10 @@ const applyChanges = () => {
   width: 100%;
 }
 
-.action-btn {
+.controls-row {
+  margin-top: 12px;
+}
+.full-btn {
   width: 100%;
 }
 </style>
