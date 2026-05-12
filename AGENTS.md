@@ -87,6 +87,17 @@ make build   # Build containers
 
 Access the app at `http://localhost:3000`
 
+## Tests, Typechecking & Lint
+
+All via `make run`:
+
+```bash
+make run cmd="npx vitest run"        # Run tests
+make run cmd="npx nuxi typecheck"    # TypeScript typecheck
+make run cmd="npx eslint ."          # Lint check
+make run cmd="npx prettier --check ." # Formatting check
+```
+
 ## Development Workflow
 
 - Do not use git commands

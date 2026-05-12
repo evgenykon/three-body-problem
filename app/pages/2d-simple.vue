@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
-import type { Body } from '~/simulation/Engine'
+import type { Body, IntegrationMethod } from '~/simulation/Engine'
 
 definePageMeta({
   layout: 'default'
@@ -17,6 +17,13 @@ const allBodies = ref<Body[]>([])
 const eventLog = ref<string[]>([])
 const selectedPreset = ref('triangle')
 const gravityConstant = ref(80)
+const integrationMethod = ref<IntegrationMethod>('euler')
+
+const integrationMethods = [
+  { value: 'euler', label: 'Euler' },
+  { value: 'rk4', label: 'RK4' },
+  { value: 'velocity-verlet', label: 'Velocity Verlet' }
+]
 
 const presets = [
   { value: 'figure-eight', label: 'Figure Eight' },
@@ -36,9 +43,9 @@ const presetBodies = {
     { id: 'body3', position: { x: -40, y: -69.28 }, velocity: { x: 9.31, y: -5.37 }, mass: 200, radius: 15, color: '#45b7d1' }
   ],
   'butterfly': [
-    { id: 'body1', position: { x: -80, y: 0 }, velocity: { x: 4.34, y: 1.77 }, mass: 200, radius: 15, color: '#ff6b6b' },
-    { id: 'body2', position: { x: 80, y: 0 }, velocity: { x: 4.34, y: 1.77 }, mass: 200, radius: 15, color: '#4ecdc4' },
-    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -8.68, y: -3.55 }, mass: 200, radius: 15, color: '#45b7d1' }
+    { id: 'body1', position: { x: -300, y: 0 }, velocity: { x: 2.24, y: 0.92 }, mass: 200, radius: 15, color: '#ff6b6b' },
+    { id: 'body2', position: { x: 300, y: 0 }, velocity: { x: 2.24, y: 0.92 }, mass: 200, radius: 15, color: '#4ecdc4' },
+    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -4.48, y: -1.83 }, mass: 200, radius: 15, color: '#45b7d1' }
   ]
 }
 
@@ -74,6 +81,13 @@ const updateGravity = () => {
   }
 }
 
+const updateIntegrationMethod = () => {
+  const engine = simRef.value?.getEngine?.()
+  if (engine) {
+    engine.setConfig({ integrationMethod: integrationMethod.value })
+  }
+}
+
 onMounted(() => {
   setTimeout(() => {
     loadPreset()
@@ -91,6 +105,10 @@ watch(isRunning, (running) => {
   if (running) {
     syncFrameCount()
   }
+})
+
+watch(integrationMethod, () => {
+  updateIntegrationMethod()
 })
 
 const editValues = ref({
@@ -176,7 +194,7 @@ const applyChanges = () => {
   if (!engine) return
   
   const bodyId = selectedBody.value?.id
-  const body = engine.getBodies().find(b => b.id === bodyId)
+  const body = engine.getBodies().find((b: Body) => b.id === bodyId)
   
   if (!body) return
   
@@ -220,7 +238,7 @@ const startPickVector = () => {
   isPickingVector.value = true
   const engine = simRef.value?.getEngine?.()
   if (!engine) return
-  const body = engine.getBodies().find(b => b.id === selectedBody.value?.id)
+  const body = engine.getBodies().find((b: Body) => b.id === selectedBody.value?.id)
   if (!body) return
   const vScale = 6
   const multiplier = (simRef.value?.canvasScale || 1) * vScale
@@ -258,6 +276,8 @@ const cancelPickVector = () => {
       <UiButton variant="outline" @click="resetSimulation">Reset</UiButton>
       <UiSelect v-model="selectedPreset" :options="presets" class="w-40" />
       <UiButton @click="loadPreset">Load</UiButton>
+      <span class="text-sm ml-2">Method:</span>
+      <UiSelect v-model="integrationMethod" :options="integrationMethods" class="w-36" />
       <span class="flex-grow"></span>
       <UiButton variant="ghost" @click="zoomIn">Zoom In</UiButton>
       <UiButton variant="ghost" @click="zoomOut">Zoom Out</UiButton>
