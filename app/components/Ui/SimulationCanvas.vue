@@ -47,6 +47,10 @@ const emit = defineEmits<{
 
 let rafId: number | null = null
 const hoveredBody = ref<string | null>(null)
+const selectedBodyId = ref<string | null>(null)
+let pickingPositionCallback: ((x: number, y: number) => void) | null = null
+let pickingMoveCallback: ((x: number, y: number) => void) | null = null
+const isPickingPosition = ref(false)
 
 const initEngine = () => {
   engine.value = new Engine2D({
@@ -195,6 +199,15 @@ const draw = () => {
     const x = center.value.x + body.position.x * scale.value
     const y = center.value.y + body.position.y * scale.value
     const isHovered = body.id === hoveredBody.value
+    const isSelected = body.id === selectedBodyId.value
+    
+    if (isSelected) {
+      ctx.beginPath()
+      ctx.arc(x, y, body.radius * scale.value * 2.5, 0, Math.PI * 2)
+      ctx.strokeStyle = '#22c55e'
+      ctx.lineWidth = 3
+      ctx.stroke()
+    }
     
     if (isHovered) {
       ctx.beginPath()
@@ -299,6 +312,15 @@ const handleClick = (event: MouseEvent) => {
   const clickX = event.clientX - rect.left
   const clickY = event.clientY - rect.top
   
+  if (isPickingPosition.value && pickingPositionCallback) {
+    const worldX = (clickX - center.value.x) / scale.value
+    const worldY = (clickY - center.value.y) / scale.value
+    pickingPositionCallback(worldX, worldY)
+    pickingPositionCallback = null
+    isPickingPosition.value = false
+    return
+  }
+  
   const bodies = engine.value.getBodies()
   for (const body of bodies) {
     const bodyX = center.value.x + body.position.x * scale.value
@@ -306,6 +328,7 @@ const handleClick = (event: MouseEvent) => {
     const distance = Math.sqrt((clickX - bodyX) ** 2 + (clickY - bodyY) ** 2)
     
     if (distance <= body.radius * scale.value * 1.5) {
+      selectedBodyId.value = body.id
       emit('bodyClick', body, event)
       return
     }
@@ -318,6 +341,12 @@ const handleMouseMove = (event: MouseEvent) => {
   const rect = canvasRef.value.getBoundingClientRect()
   const mouseX = event.clientX - rect.left
   const mouseY = event.clientY - rect.top
+  
+  if (isPickingPosition.value && pickingMoveCallback) {
+    const worldX = (mouseX - center.value.x) / scale.value
+    const worldY = (mouseY - center.value.y) / scale.value
+    pickingMoveCallback(worldX, worldY)
+  }
   
   let found: string | null = null
   const bodies = engine.value.getBodies()
@@ -362,8 +391,22 @@ defineExpose({
   reset,
   zoom,
   draw,
-  engine: computed(() => engine.value),
-  isRunning: computed(() => isRunning.value)
+  getEngine: () => engine.value,
+  isRunning: computed(() => isRunning.value),
+  selectedBodyId,
+  clearSelection: () => {
+    selectedBodyId.value = null
+  },
+  startPickingPosition: (clickCallback: (x: number, y: number) => void, moveCallback?: (x: number, y: number) => void) => {
+    pickingPositionCallback = clickCallback
+    pickingMoveCallback = moveCallback || null
+    isPickingPosition.value = true
+  },
+  cancelPickingPosition: () => {
+    pickingPositionCallback = null
+    pickingMoveCallback = null
+    isPickingPosition.value = false
+  }
 })
 </script>
 
@@ -372,6 +415,7 @@ defineExpose({
     <canvas 
       ref="canvasRef" 
       class="canvas"
+      :class="{ 'canvas--picking': isPickingPosition }"
       @click="handleClick"
       @mousemove="handleMouseMove"
     />
@@ -394,5 +438,9 @@ defineExpose({
   width: 100%;
   height: 100%;
   cursor: crosshair;
+}
+
+.canvas--picking {
+  cursor: cell;
 }
 </style>
