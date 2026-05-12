@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import type { Body } from '~/simulation/Engine'
 
 definePageMeta({
@@ -15,6 +15,70 @@ const isDrawerOpen = ref(false)
 const selectedBody = ref<Body | null>(null)
 const allBodies = ref<Body[]>([])
 const eventLog = ref<string[]>([])
+const selectedPreset = ref('triangle')
+const gravityConstant = ref(80)
+
+const presets = [
+  { value: 'figure-eight', label: 'Figure Eight' },
+  { value: 'triangle', label: 'Triangle' },
+  { value: 'butterfly', label: 'Butterfly I' }
+]
+
+const presetBodies = {
+  'figure-eight': [
+    { id: 'body1', position: { x: 77.6, y: -19.4 }, velocity: { x: 4717.8, y: 4376.1 }, mass: 200, radius: 15, color: '#ff6b6b' },
+    { id: 'body2', position: { x: -77.6, y: 19.4 }, velocity: { x: 4717.8, y: 4376.1 }, mass: 200, radius: 15, color: '#4ecdc4' },
+    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -9435.6, y: -8752.2 }, mass: 200, radius: 15, color: '#45b7d1' }
+  ],
+  'triangle': [
+    { id: 'body1', position: { x: 80, y: 0 }, velocity: { x: 0, y: 10119.3 }, mass: 200, radius: 15, color: '#ff6b6b' },
+    { id: 'body2', position: { x: -40, y: 69.3 }, velocity: { x: -8763.5, y: -5059.6 }, mass: 200, radius: 15, color: '#4ecdc4' },
+    { id: 'body3', position: { x: -40, y: -69.3 }, velocity: { x: 8763.5, y: -5059.6 }, mass: 200, radius: 15, color: '#45b7d1' }
+  ],
+  'butterfly': [
+    { id: 'body1', position: { x: -80, y: 0 }, velocity: { x: 3099.1, y: 1264.7 }, mass: 200, radius: 15, color: '#ff6b6b' },
+    { id: 'body2', position: { x: 80, y: 0 }, velocity: { x: 3099.1, y: 1264.7 }, mass: 200, radius: 15, color: '#4ecdc4' },
+    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -6198.2, y: -2529.4 }, mass: 200, radius: 15, color: '#45b7d1' }
+  ]
+}
+
+
+const loadPreset = () => {
+  const preset = presetBodies[selectedPreset.value as keyof typeof presetBodies]
+  if (!preset || !simRef.value) return
+  
+  const engine = simRef.value.getEngine?.()
+  if (!engine) return
+  
+  simRef.value.stop()
+  isRunning.value = false
+  
+  engine.getBodies().forEach((b: Body) => {
+    engine.removeBody(b.id)
+  })
+  
+  preset.forEach((body) => {
+    engine.addBody({ ...body })
+  })
+  
+  engine.setDefaultBodies(preset)
+  frameCount.value = 0
+  eventLog.value = []
+  eventLog.value.push(`Loaded preset: ${presets.find(p => p.value === selectedPreset.value)?.label}`)
+}
+
+const updateGravity = () => {
+  const engine = simRef.value?.getEngine?.()
+  if (engine) {
+    engine.setConfig({ gravitationalConstant: gravityConstant.value })
+  }
+}
+
+onMounted(() => {
+  setTimeout(() => {
+    loadPreset()
+  }, 100)
+})
 
 const syncFrameCount = () => {
   frameCount.value++
@@ -43,7 +107,7 @@ let originalValues = {
   y: 0,
   vx: 0,
   vy: 0,
-  mass: 500,
+  mass: 200,
   radius: 15
 }
 
@@ -185,11 +249,16 @@ const cancelPickVector = () => {
   <div class="page-content">
     <UiHeader :level="1" class="page-title">2D Simple Simulation</UiHeader>
     
-    <div class="flex gap-2 mb-2">
+<div class="flex gap-2 mb-2 items-center">
+      <span class="text-sm">G:</span>
+      <input v-model.number="gravityConstant" class="input-field w-20" type="number" @change="updateGravity" />
       <UiButton @click="toggleSimulation">
         {{ isRunning ? 'Pause' : 'Play' }}
       </UiButton>
       <UiButton variant="outline" @click="resetSimulation">Reset</UiButton>
+      <UiSelect v-model="selectedPreset" :options="presets" class="w-40" />
+      <UiButton @click="loadPreset">Load</UiButton>
+      <span class="flex-grow"></span>
       <UiButton variant="ghost" @click="zoomIn">Zoom In</UiButton>
       <UiButton variant="ghost" @click="zoomOut">Zoom Out</UiButton>
     </div>

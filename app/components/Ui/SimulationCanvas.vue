@@ -685,6 +685,13 @@ defineExpose({
   clearSelection: () => {
     selectedBodyId.value = null
   },
+  setBodies: (bodies: any[]) => {
+    if (!engine.value) return
+    engine.value.getBodies().forEach(b => engine.value!.removeBody(b.id))
+    bodies.forEach(b => engine.value!.addBody({ ...b }))
+    engine.value.setDefaultBodies(bodies)
+    draw()
+  },
   startPickingPosition: (clickCallback: (x: number, y: number) => void, moveCallback?: (x: number, y: number) => void) => {
     pickingPositionCallback = clickCallback
     pickingMoveCallback = moveCallback || null
