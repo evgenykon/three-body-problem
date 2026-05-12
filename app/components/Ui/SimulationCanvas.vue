@@ -51,6 +51,11 @@ const selectedBodyId = ref<string | null>(null)
 let pickingPositionCallback: ((x: number, y: number) => void) | null = null
 let pickingMoveCallback: ((x: number, y: number) => void) | null = null
 const isPickingPosition = ref(false)
+const isPickingVector = ref(false)
+const pickingVectorBody = ref<{ x: number; y: number } | null>(null)
+const pickingVectorTarget = ref<{ x: number; y: number } | null>(null)
+let pickingVectorClickCallback: ((vx: number, vy: number) => void) | null = null
+let pickingVectorMoveCallback: ((vx: number, vy: number) => void) | null = null
 
 const initEngine = () => {
   engine.value = new Engine2D({
@@ -273,6 +278,44 @@ const draw = () => {
     }
   })
   
+  if (isPickingVector.value && pickingVectorBody.value && pickingVectorTarget.value) {
+    const bodyX = center.value.x + pickingVectorBody.value.x * scale.value
+    const bodyY = center.value.y + pickingVectorBody.value.y * scale.value
+    const targetX = center.value.x + pickingVectorTarget.value.x * scale.value
+    const targetY = center.value.y + pickingVectorTarget.value.y * scale.value
+    
+    const vx = targetX - bodyX
+    const vy = targetY - bodyY
+    
+    if (Math.sqrt(vx * vx + vy * vy) > 1) {
+      const angle = Math.atan2(vy, vx)
+      const arrowSize = 8
+      
+      ctx.beginPath()
+      ctx.moveTo(bodyX, bodyY)
+      ctx.lineTo(targetX, targetY)
+      ctx.strokeStyle = '#22c55e'
+      ctx.lineWidth = 2
+      ctx.setLineDash([5, 5])
+      ctx.stroke()
+      ctx.setLineDash([])
+      
+      ctx.beginPath()
+      ctx.moveTo(targetX, targetY)
+      ctx.lineTo(
+        targetX - arrowSize * Math.cos(angle - Math.PI / 6),
+        targetY - arrowSize * Math.sin(angle - Math.PI / 6)
+      )
+      ctx.lineTo(
+        targetX - arrowSize * Math.cos(angle + Math.PI / 6),
+        targetY - arrowSize * Math.sin(angle + Math.PI / 6)
+      )
+      ctx.closePath()
+      ctx.fillStyle = '#22c55e'
+      ctx.fill()
+    }
+  }
+  
   updateParticles()
   drawParticles(ctx)
 }
@@ -321,6 +364,20 @@ const handleClick = (event: MouseEvent) => {
     return
   }
   
+  if (isPickingVector.value && pickingVectorBody.value && pickingVectorClickCallback) {
+    const worldX = (clickX - center.value.x) / scale.value
+    const worldY = (clickY - center.value.y) / scale.value
+    const vx = worldX - pickingVectorBody.value.x
+    const vy = worldY - pickingVectorBody.value.y
+    pickingVectorClickCallback(vx, vy)
+    isPickingVector.value = false
+    pickingVectorBody.value = null
+    pickingVectorTarget.value = null
+    pickingVectorClickCallback = null
+    pickingVectorMoveCallback = null
+    return
+  }
+  
   const bodies = engine.value.getBodies()
   for (const body of bodies) {
     const bodyX = center.value.x + body.position.x * scale.value
@@ -346,6 +403,18 @@ const handleMouseMove = (event: MouseEvent) => {
     const worldX = (mouseX - center.value.x) / scale.value
     const worldY = (mouseY - center.value.y) / scale.value
     pickingMoveCallback(worldX, worldY)
+  }
+  
+  if (isPickingVector.value && pickingVectorBody.value) {
+    const worldX = (mouseX - center.value.x) / scale.value
+    const worldY = (mouseY - center.value.y) / scale.value
+    pickingVectorTarget.value = { x: worldX, y: worldY }
+    
+    if (pickingVectorMoveCallback) {
+      const vx = worldX - pickingVectorBody.value.x
+      const vy = worldY - pickingVectorBody.value.y
+      pickingVectorMoveCallback(vx, vy)
+    }
   }
   
   let found: string | null = null
@@ -393,6 +462,7 @@ defineExpose({
   draw,
   getEngine: () => engine.value,
   isRunning: computed(() => isRunning.value),
+  canvasScale: computed(() => scale.value),
   selectedBodyId,
   clearSelection: () => {
     selectedBodyId.value = null
@@ -406,6 +476,20 @@ defineExpose({
     pickingPositionCallback = null
     pickingMoveCallback = null
     isPickingPosition.value = false
+  },
+  startPickingVector: (bodyX: number, bodyY: number, clickCallback: (vx: number, vy: number) => void, moveCallback?: (vx: number, vy: number) => void) => {
+    pickingVectorBody.value = { x: bodyX, y: bodyY }
+    pickingVectorClickCallback = clickCallback
+    pickingVectorMoveCallback = moveCallback || null
+    pickingVectorTarget.value = null
+    isPickingVector.value = true
+  },
+  cancelPickingVector: () => {
+    isPickingVector.value = false
+    pickingVectorBody.value = null
+    pickingVectorTarget.value = null
+    pickingVectorClickCallback = null
+    pickingVectorMoveCallback = null
   }
 })
 </script>

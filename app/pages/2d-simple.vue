@@ -9,6 +9,7 @@ definePageMeta({
 const simRef = ref<any>(null)
 const isRunning = ref(false)
 const isPickingPosition = ref(false)
+const isPickingVector = ref(false)
 const isDrawerOpen = ref(false)
 const selectedBody = ref<Body | null>(null)
 const allBodies = ref<Body[]>([])
@@ -76,7 +77,9 @@ const handleBodyClick = (body: Body) => {
 
 const closeDrawer = () => {
   isPickingPosition.value = false
+  isPickingVector.value = false
   simRef.value?.cancelPickingPosition()
+  simRef.value?.cancelPickingVector()
   isDrawerOpen.value = false
   selectedBody.value = null
   simRef.value?.clearSelection()
@@ -103,6 +106,8 @@ const applyChanges = () => {
 }
 
 const startPickPosition = () => {
+  isPickingVector.value = false
+  simRef.value?.cancelPickingVector()
   isPickingPosition.value = true
   simRef.value?.startPickingPosition(
     (x: number, y: number) => {
@@ -120,6 +125,36 @@ const startPickPosition = () => {
 const cancelPickPosition = () => {
   isPickingPosition.value = false
   simRef.value?.cancelPickingPosition()
+}
+
+const startPickVector = () => {
+  isPickingPosition.value = false
+  simRef.value?.cancelPickingPosition()
+  isPickingVector.value = true
+  const engine = simRef.value?.getEngine?.()
+  if (!engine) return
+  const body = engine.getBodies().find(b => b.id === selectedBody.value?.id)
+  if (!body) return
+  const vScale = 6
+  const multiplier = (simRef.value?.canvasScale || 1) * vScale
+  simRef.value?.startPickingVector(
+    body.position.x,
+    body.position.y,
+    (vx: number, vy: number) => {
+      editValues.value.vx = Math.round((vx / multiplier) * 100) / 100
+      editValues.value.vy = Math.round((vy / multiplier) * 100) / 100
+      isPickingVector.value = false
+    },
+    (vx: number, vy: number) => {
+      editValues.value.vx = Math.round((vx / multiplier) * 100) / 100
+      editValues.value.vy = Math.round((vy / multiplier) * 100) / 100
+    }
+  )
+}
+
+const cancelPickVector = () => {
+  isPickingVector.value = false
+  simRef.value?.cancelPickingVector()
 }
 </script>
 
@@ -172,15 +207,26 @@ const cancelPickPosition = () => {
                 ⊕
               </UiButton>
             </div>
-            <div class="input-grid">
-              <div class="input-item">
+            <div class="input-row">
+              <div class="input-pair">
                 <span class="label">VX</span>
                 <input v-model.number="editValues.vx" class="input-field" type="number" step="0.01" />
               </div>
-              <div class="input-item">
+              <div class="input-pair">
                 <span class="label">VY</span>
                 <input v-model.number="editValues.vy" class="input-field" type="number" step="0.01" />
               </div>
+              <UiButton 
+                :variant="isPickingVector ? 'active' : 'ghost'" 
+                size="icon" 
+                class="pick-btn"
+                :title="isPickingVector ? 'Picking vector...' : 'Pick Vector'"
+                @click="isPickingVector ? cancelPickVector() : startPickVector()"
+              >
+                ⊕
+              </UiButton>
+            </div>
+            <div class="input-grid">
               <div class="input-item">
                 <span class="label">Mass</span>
                 <input v-model.number="editValues.mass" class="input-field" type="number" />
