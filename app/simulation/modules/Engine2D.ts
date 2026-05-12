@@ -6,6 +6,7 @@ export class Engine2D {
   private config: SimulationConfig
   private trails: Map<string, Vector2D[]> = new Map()
   private initialBodies: Body[] = []
+  private defaultBodies: Body[] = []
 
   constructor(config: Partial<SimulationConfig> = {}) {
     this.config = { ...defaultConfig, ...config }
@@ -25,6 +26,20 @@ export class Engine2D {
       radius: b.radius,
       color: b.color
     }))
+  }
+
+  setDefaultBodies(bodies: Body[]): void {
+    this.defaultBodies = bodies.map(b => ({
+      id: b.id,
+      position: { ...b.position },
+      velocity: { ...b.velocity },
+      mass: b.mass,
+      radius: b.radius,
+      color: b.color
+    }))
+    if (this.initialBodies.length === 0) {
+      this.initialBodies = [...this.defaultBodies]
+    }
   }
 
   removeBody(id: string): void {
@@ -118,8 +133,9 @@ export class Engine2D {
   }
 
   reset(): void {
-    if (this.initialBodies.length > 0) {
-      this.bodies = this.initialBodies.map(b => ({
+    const bodiesToRestore = this.initialBodies.length > 0 ? this.initialBodies : this.defaultBodies
+    if (bodiesToRestore.length > 0) {
+      this.bodies = bodiesToRestore.map(b => ({
         id: b.id,
         position: { ...b.position },
         velocity: { ...b.velocity },
@@ -127,6 +143,7 @@ export class Engine2D {
         radius: b.radius,
         color: b.color
       }))
+      this.trails.clear()
       this.bodies.forEach(body => {
         this.trails.set(body.id, [])
       })

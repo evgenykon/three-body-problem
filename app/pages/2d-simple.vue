@@ -14,6 +14,7 @@ const isPickingVector = ref(false)
 const isDrawerOpen = ref(false)
 const selectedBody = ref<Body | null>(null)
 const allBodies = ref<Body[]>([])
+const eventLog = ref<string[]>([])
 
 const syncFrameCount = () => {
   frameCount.value++
@@ -58,11 +59,17 @@ const toggleSimulation = () => {
   }
 }
 
+const onSimStop = (reason: string) => {
+  isRunning.value = false
+  eventLog.value.push(`[${frameCount.value}] ${reason}`)
+}
+
 const resetSimulation = () => {
   if (simRef.value) {
     simRef.value.reset()
     frameCount.value = 0
     isRunning.value = false
+    eventLog.value = []
   }
 }
 
@@ -117,6 +124,7 @@ const applyChanges = () => {
   body.radius = Number(editValues.value.radius)
   
   originalValues = { ...editValues.value }
+  simRef.value?.updateInitialBodies()
   closeDrawer()
 }
 
@@ -192,8 +200,13 @@ const cancelPickVector = () => {
         ref="simRef" 
         :auto-start="false"
         @body-click="handleBodyClick"
-        @stop="isRunning = false"
+        @stop="onSimStop"
+        @event="(msg) => eventLog.push(`[${frameCount}] ${msg}`)"
       />
+    </div>
+
+    <div v-if="eventLog.length > 0" class="event-log">
+      <div v-for="(event, i) in eventLog" :key="i" class="event-item">{{ event }}</div>
     </div>
 
     <UiLeftDrawer v-if="isDrawerOpen" :title="selectedBody?.id || 'Body Details'">
@@ -361,5 +374,21 @@ const cancelPickVector = () => {
   font-size: 12px;
   border-radius: 4px;
   z-index: 10;
+}
+
+.event-log {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--muted);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 11px;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.event-item {
+  padding: 2px 0;
+  color: var(--foreground);
 }
 </style>

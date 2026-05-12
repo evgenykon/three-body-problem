@@ -51,7 +51,8 @@ const mergeMessages = ref<MergeMessage[]>([])
 const emit = defineEmits<{
   (e: 'ready', ctx: CanvasRenderingContext2D, width: number, height: number): void
   (e: 'bodyClick', body: Body, event: MouseEvent): void
-  (e: 'stop'): void
+  (e: 'stop', reason: string): void
+  (e: 'event', message: string): void
 }>()
 
 let rafId: number | null = null
@@ -75,9 +76,15 @@ const initEngine = () => {
     gravitationalConstant: 80
   })
   
-  const bodies = createDefaultBodies2D()
-  engine.value.setInitialBodies(bodies)
-  bodies.forEach(body => engine.value?.addBody(body))
+  const defaultBodies = createDefaultBodies2D()
+  engine.value.setDefaultBodies(defaultBodies)
+  defaultBodies.forEach(body => engine.value?.addBody(body))
+}
+
+const updateInitialBodies = () => {
+  if (engine.value) {
+    engine.value.setInitialBodies(engine.value.getBodies())
+  }
 }
 
 const resizeCanvas = () => {
@@ -155,6 +162,7 @@ const checkCollisions = () => {
       const dist = Math.sqrt(dx * dx + dy * dy)
       
       if (dist < (a.radius + b.radius)) {
+        emit('event', `Collision: ${a.id} + ${b.id}`)
         toRemove.add(a.id)
         toRemove.add(b.id)
         
@@ -193,6 +201,7 @@ const checkCollisions = () => {
           radius: newRadius * Math.sqrt(finalMass / totalMass),
           color: a.color
         })
+        emit('event', `Created: ${mergedBodies[mergedBodies.length - 1].id} (mass: ${finalMass.toFixed(0)})`)
       }
     }
   }
@@ -486,6 +495,13 @@ const step = () => {
     checkCollisions()
     frameCount.value++
     
+    if (frameCount.value >= 10000) {
+      emit('stop', 'Frame limit (10000) reached - simulation stopped')
+      emit('event', 'Frame limit reached (10000)')
+      stop()
+      return
+    }
+    
     const bodies = engine.value.getBodies()
     if (bodies.length <= 1) {
       if (singleBodyCountdown === null) {
@@ -493,6 +509,8 @@ const step = () => {
       }
       singleBodyCountdown--
       if (singleBodyCountdown <= 0) {
+        emit('stop', '1 body remaining - simulation stopped')
+        emit('event', 'Only 1 body left')
         stop()
         singleBodyCountdown = null
         return
@@ -507,6 +525,8 @@ const step = () => {
         const screenX = center.value.x + body.position.x * scale.value
         const screenY = center.value.y + body.position.y * scale.value
         if (screenX < -100 || screenX > width + 100 || screenY < -100 || screenY > height + 100) {
+          emit('stop', `Body ${body.id} out of bounds - simulation stopped`)
+          emit('event', `Body ${body.id} flew out of bounds`)
           stop()
           return
         }
@@ -521,9 +541,9 @@ const start = () => {
   isRunning.value = true
 }
 
-const stop = () => {
+const stop = (reason = 'Simulation stopped') => {
   isRunning.value = false
-  emit('stop')
+  emit('stop', reason)
 }
 
 const reset = () => {
@@ -661,6 +681,7 @@ defineExpose({
   canvasScale: computed(() => scale.value),
   frameCount,
   selectedBodyId,
+  updateInitialBodies,
   clearSelection: () => {
     selectedBodyId.value = null
   },
