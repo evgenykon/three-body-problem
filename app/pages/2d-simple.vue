@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { Body } from '~/simulation/Engine'
 
 definePageMeta({
@@ -8,11 +8,23 @@ definePageMeta({
 
 const simRef = ref<any>(null)
 const isRunning = ref(false)
+const frameCount = ref(0)
 const isPickingPosition = ref(false)
 const isPickingVector = ref(false)
 const isDrawerOpen = ref(false)
 const selectedBody = ref<Body | null>(null)
 const allBodies = ref<Body[]>([])
+
+const syncFrameCount = () => {
+  frameCount.value++
+  requestAnimationFrame(syncFrameCount)
+}
+
+watch(isRunning, (running) => {
+  if (running) {
+    syncFrameCount()
+  }
+})
 
 const editValues = ref({
   x: 0,
@@ -47,6 +59,7 @@ const toggleSimulation = () => {
 const resetSimulation = () => {
   if (simRef.value) {
     simRef.value.reset()
+    frameCount.value = 0
     isRunning.value = true
   }
 }
@@ -172,7 +185,7 @@ const cancelPickVector = () => {
     </div>
 
     <div class="canvas-container">
-      <div v-if="isRunning" class="frame-counter">Frame: {{ simRef?.frameCount?.value || 0 }}</div>
+      <div v-if="isRunning" class="frame-counter">Frame: {{ frameCount }}</div>
       <UiSimulationCanvas 
         ref="simRef" 
         :auto-start="false"
