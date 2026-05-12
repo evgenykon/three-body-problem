@@ -51,12 +51,14 @@ const mergeMessages = ref<MergeMessage[]>([])
 const emit = defineEmits<{
   (e: 'ready', ctx: CanvasRenderingContext2D, width: number, height: number): void
   (e: 'bodyClick', body: Body, event: MouseEvent): void
+  (e: 'stop'): void
 }>()
 
 let rafId: number | null = null
 const hoveredBody = ref<string | null>(null)
 const selectedBodyId = ref<string | null>(null)
 const frameCount = ref(0)
+let singleBodyCountdown: number | null = null
 let pickingPositionCallback: ((x: number, y: number) => void) | null = null
 let pickingMoveCallback: ((x: number, y: number) => void) | null = null
 const isPickingPosition = ref(false)
@@ -74,6 +76,7 @@ const initEngine = () => {
   })
   
   const bodies = createDefaultBodies2D()
+  engine.value.setInitialBodies(bodies)
   bodies.forEach(body => engine.value?.addBody(body))
 }
 
@@ -385,7 +388,7 @@ const draw = () => {
     ctx.fillStyle = '#666666'
     ctx.fillText(`m=${body.mass}`, x + body.radius * scale.value + 8, y + 6)
     
-    const trajectory = predictTrajectory(body, 100)
+    const trajectory = predictTrajectory(body, 400)
     if (trajectory.length > 1) {
       ctx.beginPath()
       ctx.moveTo(x, y)
@@ -482,6 +485,33 @@ const step = () => {
     engine.value.step()
     checkCollisions()
     frameCount.value++
+    
+    const bodies = engine.value.getBodies()
+    if (bodies.length <= 1) {
+      if (singleBodyCountdown === null) {
+        singleBodyCountdown = 100
+      }
+      singleBodyCountdown--
+      if (singleBodyCountdown <= 0) {
+        stop()
+        singleBodyCountdown = null
+        return
+      }
+    } else {
+      singleBodyCountdown = null
+    }
+    
+    if (canvasRef.value) {
+      const { width, height } = canvasRef.value
+      for (const body of bodies) {
+        const screenX = center.value.x + body.position.x * scale.value
+        const screenY = center.value.y + body.position.y * scale.value
+        if (screenX < -100 || screenX > width + 100 || screenY < -100 || screenY > height + 100) {
+          stop()
+          return
+        }
+      }
+    }
   }
   draw()
   animationId.value = requestAnimationFrame(step)
@@ -493,6 +523,7 @@ const start = () => {
 
 const stop = () => {
   isRunning.value = false
+  emit('stop')
 }
 
 const reset = () => {
@@ -501,6 +532,8 @@ const reset = () => {
     particles.value = []
     mergeMessages.value = []
     frameCount.value = 0
+    singleBodyCountdown = null
+    stop()
   }
 }
 

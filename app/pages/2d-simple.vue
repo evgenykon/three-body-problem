@@ -17,7 +17,9 @@ const allBodies = ref<Body[]>([])
 
 const syncFrameCount = () => {
   frameCount.value++
-  requestAnimationFrame(syncFrameCount)
+  if (isRunning.value) {
+    requestAnimationFrame(syncFrameCount)
+  }
 }
 
 watch(isRunning, (running) => {
@@ -60,7 +62,7 @@ const resetSimulation = () => {
   if (simRef.value) {
     simRef.value.reset()
     frameCount.value = 0
-    isRunning.value = true
+    isRunning.value = false
   }
 }
 
@@ -190,6 +192,7 @@ const cancelPickVector = () => {
         ref="simRef" 
         :auto-start="false"
         @body-click="handleBodyClick"
+        @stop="isRunning = false"
       />
     </div>
 
