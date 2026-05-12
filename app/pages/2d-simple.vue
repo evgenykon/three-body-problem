@@ -26,19 +26,19 @@ const presets = [
 
 const presetBodies = {
   'figure-eight': [
-    { id: 'body1', position: { x: 77.6, y: -19.4 }, velocity: { x: 4717.8, y: 4376.1 }, mass: 200, radius: 15, color: '#ff6b6b' },
-    { id: 'body2', position: { x: -77.6, y: 19.4 }, velocity: { x: 4717.8, y: 4376.1 }, mass: 200, radius: 15, color: '#4ecdc4' },
-    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -9435.6, y: -8752.2 }, mass: 200, radius: 15, color: '#45b7d1' }
+    { id: 'body1', position: { x: 77.6, y: -19.45 }, velocity: { x: -6.59, y: -6.11 }, mass: 200, radius: 15, color: '#ff6b6b' },
+    { id: 'body2', position: { x: -77.6, y: 19.45 }, velocity: { x: -6.59, y: -6.11 }, mass: 200, radius: 15, color: '#4ecdc4' },
+    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: 13.18, y: 12.23 }, mass: 200, radius: 15, color: '#45b7d1' }
   ],
   'triangle': [
-    { id: 'body1', position: { x: 80, y: 0 }, velocity: { x: 0, y: 10119.3 }, mass: 200, radius: 15, color: '#ff6b6b' },
-    { id: 'body2', position: { x: -40, y: 69.3 }, velocity: { x: -8763.5, y: -5059.6 }, mass: 200, radius: 15, color: '#4ecdc4' },
-    { id: 'body3', position: { x: -40, y: -69.3 }, velocity: { x: 8763.5, y: -5059.6 }, mass: 200, radius: 15, color: '#45b7d1' }
+    { id: 'body1', position: { x: 80, y: 0 }, velocity: { x: 0, y: 10.75 }, mass: 200, radius: 15, color: '#ff6b6b' },
+    { id: 'body2', position: { x: -40, y: 69.28 }, velocity: { x: -9.31, y: -5.37 }, mass: 200, radius: 15, color: '#4ecdc4' },
+    { id: 'body3', position: { x: -40, y: -69.28 }, velocity: { x: 9.31, y: -5.37 }, mass: 200, radius: 15, color: '#45b7d1' }
   ],
   'butterfly': [
-    { id: 'body1', position: { x: -80, y: 0 }, velocity: { x: 3099.1, y: 1264.7 }, mass: 200, radius: 15, color: '#ff6b6b' },
-    { id: 'body2', position: { x: 80, y: 0 }, velocity: { x: 3099.1, y: 1264.7 }, mass: 200, radius: 15, color: '#4ecdc4' },
-    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -6198.2, y: -2529.4 }, mass: 200, radius: 15, color: '#45b7d1' }
+    { id: 'body1', position: { x: -80, y: 0 }, velocity: { x: 4.34, y: 1.77 }, mass: 200, radius: 15, color: '#ff6b6b' },
+    { id: 'body2', position: { x: 80, y: 0 }, velocity: { x: 4.34, y: 1.77 }, mass: 200, radius: 15, color: '#4ecdc4' },
+    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -8.68, y: -3.55 }, mass: 200, radius: 15, color: '#45b7d1' }
   ]
 }
 
