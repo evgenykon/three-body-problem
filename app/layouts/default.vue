@@ -56,7 +56,7 @@ const navigate = (to: string) => router.push(to)
         </div>
       </aside>
 
-      <main class="ml-64 flex-1 p-8">
+      <main class="ml-64 flex-1 p-2">
         <slot />
       </main>
     </div>

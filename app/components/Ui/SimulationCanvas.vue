@@ -40,6 +40,14 @@ interface Particle {
 
 const particles = ref<Particle[]>([])
 
+interface MergeMessage {
+  x: number
+  y: number
+  text: string
+  life: number
+}
+const mergeMessages = ref<MergeMessage[]>([])
+
 const emit = defineEmits<{
   (e: 'ready', ctx: CanvasRenderingContext2D, width: number, height: number): void
   (e: 'bodyClick', body: Body, event: MouseEvent): void
@@ -48,12 +56,14 @@ const emit = defineEmits<{
 let rafId: number | null = null
 const hoveredBody = ref<string | null>(null)
 const selectedBodyId = ref<string | null>(null)
+const frameCount = ref(0)
 let pickingPositionCallback: ((x: number, y: number) => void) | null = null
 let pickingMoveCallback: ((x: number, y: number) => void) | null = null
 const isPickingPosition = ref(false)
 const isPickingVector = ref(false)
 const pickingVectorBody = ref<{ x: number; y: number } | null>(null)
 const pickingVectorTarget = ref<{ x: number; y: number } | null>(null)
+const pickingVectorVelocity = ref<{ vx: number; vy: number } | null>(null)
 let pickingVectorClickCallback: ((vx: number, vy: number) => void) | null = null
 let pickingVectorMoveCallback: ((vx: number, vy: number) => void) | null = null
 
@@ -100,6 +110,12 @@ const updateParticles = () => {
     p.life -= 0.02
     return p.life > 0
   })
+  
+  mergeMessages.value = mergeMessages.value.filter(m => {
+    m.life -= 0.02
+    m.y -= 0.5
+    return m.life > 0
+  })
 }
 
 const drawParticles = (ctx: CanvasRenderingContext2D) => {
@@ -109,38 +125,122 @@ const drawParticles = (ctx: CanvasRenderingContext2D) => {
     ctx.fillStyle = p.color + Math.floor(p.life * 255).toString(16).padStart(2, '0')
     ctx.fill()
   })
+  
+  mergeMessages.value.forEach(m => {
+    ctx.font = '12px monospace'
+    ctx.fillStyle = `rgba(255, 100, 100, ${m.life})`
+    ctx.fillText(m.text, m.x, m.y)
+  })
 }
 
 const checkCollisions = () => {
   if (!engine.value) return
   
   const bodies = engine.value.getBodies()
-  const toRemove: string[] = []
+  const toRemove: Set<string> = new Set()
+  const mergedBodies: Body[] = []
   
   for (let i = 0; i < bodies.length; i++) {
     for (let j = i + 1; j < bodies.length; j++) {
       const a = bodies[i]
       const b = bodies[j]
       
+      if (toRemove.has(a.id) || toRemove.has(b.id)) continue
+      
       const dx = a.position.x - b.position.x
       const dy = a.position.y - b.position.y
       const dist = Math.sqrt(dx * dx + dy * dy)
       
       if (dist < (a.radius + b.radius)) {
-        const collX = center.value.x + (a.position.x + b.position.x) / 2 * scale.value
-        const collY = center.value.y + (a.position.y + b.position.y) / 2 * scale.value
+        toRemove.add(a.id)
+        toRemove.add(b.id)
         
-        createExplosion(collX, collY, a.color, 30)
-        createExplosion(collX, collY, b.color, 30)
+        const relVx = a.velocity.x - b.velocity.x
+        const relVy = a.velocity.y - b.velocity.y
+        const relSpeed = Math.sqrt(relVx * relVx + relVy * relVy)
         
-        toRemove.push(a.id, b.id)
+        const totalMass = a.mass + b.mass
+        const dustPercent = Math.min(relSpeed * 0.5, 10)
+        const lostMass = totalMass * (dustPercent / 100)
+        const finalMass = totalMass - lostMass
+        
+        const newX = (a.position.x * a.mass + b.position.x * b.mass) / totalMass
+        const newY = (a.position.y * a.mass + b.position.y * b.mass) / totalMass
+        const newVx = (a.velocity.x * a.mass + b.velocity.x * b.mass) / totalMass
+        const newVy = (a.velocity.y * a.mass + b.velocity.y * b.mass) / totalMass
+        const newRadius = Math.sqrt(a.radius * a.radius + b.radius * b.radius)
+        
+        const mergeX = center.value.x + newX * scale.value
+        const mergeY = center.value.y + newY * scale.value
+        const dustCount = Math.floor(5 + relSpeed * 3)
+        createExplosion(mergeX, mergeY, '#ffffff', dustCount)
+        
+        mergeMessages.value.push({
+          x: mergeX,
+          y: mergeY - newRadius * scale.value - 10,
+          text: `-${dustPercent.toFixed(1)}% (${lostMass.toFixed(0)})`,
+          life: 1
+        })
+        
+        mergedBodies.push({
+          id: `merged-${Date.now()}`,
+          position: { x: newX, y: newY },
+          velocity: { x: newVx, y: newVy },
+          mass: finalMass,
+          radius: newRadius * Math.sqrt(finalMass / totalMass),
+          color: a.color
+        })
       }
     }
   }
   
-  if (toRemove.length > 0) {
+  if (toRemove.size > 0) {
     toRemove.forEach(id => engine.value!.removeBody(id))
   }
+  
+  mergedBodies.forEach(body => engine.value!.addBody(body))
+}
+
+const predictTrajectory = (body: Body, steps: number): { x: number; y: number }[] => {
+  return predictTrajectoryWithVelocity(body, body.velocity.x, body.velocity.y, steps)
+}
+
+const predictTrajectoryWithVelocity = (body: Body, vx: number, vy: number, steps: number): { x: number; y: number }[] => {
+  const trajectory: { x: number; y: number }[] = []
+  let pos = { x: body.position.x, y: body.position.y }
+  let vel = { x: vx, y: vy }
+  const G = 80
+  const softening = 5
+  const dt = 0.016
+  
+  const bodies = engine.value!.getBodies()
+  
+  for (let step = 0; step < steps; step++) {
+    let ax = 0
+    let ay = 0
+    
+    bodies.forEach(other => {
+      if (other.id === body.id) return
+      
+      const dx = other.position.x - pos.x
+      const dy = other.position.y - pos.y
+      const distSq = dx * dx + dy * dy + softening * softening
+      const dist = Math.sqrt(distSq)
+      const force = G * other.mass / distSq
+      
+      ax += (force * dx) / dist
+      ay += (force * dy) / dist
+    })
+    
+    vel.x += ax * dt
+    vel.y += ay * dt
+    pos.x += vel.x * dt
+    pos.y += vel.y * dt
+    
+    trajectory.push({ x: pos.x, y: pos.y })
+  }
+  
+  return trajectory
 }
 
 const draw = () => {
@@ -174,9 +274,49 @@ const draw = () => {
     ctx.stroke()
   }
   
+  ctx.font = '10px monospace'
+  ctx.fillStyle = '#555555'
+  for (let x = offsetX; x < width; x += gridSize) {
+    const worldX = Math.round((x - center.value.x) / scale.value)
+    if (worldX !== 0) {
+      ctx.fillText(worldX.toString(), x + 3, center.value.y + 12)
+    }
+  }
+  for (let y = offsetY; y < height; y += gridSize) {
+    const worldY = Math.round((center.value.y - y) / scale.value)
+    if (worldY !== 0) {
+      ctx.fillText(worldY.toString(), center.value.x + 3, y - 3)
+    }
+  }
+  
   ctx.font = '12px monospace'
   ctx.fillStyle = '#666666'
   ctx.fillText('[0;0]', center.value.x + 8, center.value.y - 8)
+  
+  const originX = center.value.x
+  const originY = center.value.y
+  
+  ctx.fillStyle = '#ffe66d'
+  ctx.fillRect(originX - 0.5, originY - 0.5, 1, 1)
+  
+  ctx.beginPath()
+  ctx.moveTo(originX, 0)
+  ctx.lineTo(originX, height)
+  ctx.strokeStyle = '#ffe66d30'
+  ctx.lineWidth = 1
+  ctx.stroke()
+  
+  ctx.beginPath()
+  ctx.moveTo(0, originY)
+  ctx.lineTo(width, originY)
+  ctx.strokeStyle = '#ffe66d30'
+  ctx.lineWidth = 1
+  ctx.stroke()
+  
+  ctx.font = 'bold 12px monospace'
+  ctx.fillStyle = '#ffe66d'
+  ctx.fillText('Y', originX - 14, 16)
+  ctx.fillText('X', width - 16, originY + 14)
   
   if (props.showTrails) {
     engine.value.getBodies().forEach(body => {
@@ -245,10 +385,27 @@ const draw = () => {
     ctx.fillStyle = '#666666'
     ctx.fillText(`m=${body.mass}`, x + body.radius * scale.value + 8, y + 6)
     
+    const trajectory = predictTrajectory(body, 100)
+    if (trajectory.length > 1) {
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+      trajectory.forEach((point) => {
+        const px = center.value.x + point.x * scale.value
+        const py = center.value.y + point.y * scale.value
+        ctx.lineTo(px, py)
+      })
+      ctx.strokeStyle = body.color + '60'
+      ctx.lineWidth = 1
+      ctx.setLineDash([3, 6])
+      ctx.stroke()
+      ctx.setLineDash([])
+    }
+    
     const vScale = 6
     const vx = body.velocity.x * scale.value * vScale
     const vy = body.velocity.y * scale.value * vScale
     const vLen = Math.sqrt(vx * vx + vy * vy)
+    
     if (vLen > 1) {
       const angle = Math.atan2(vy, vx)
       const arrowX = x + vx
@@ -324,6 +481,7 @@ const step = () => {
   if (engine.value && isRunning.value) {
     engine.value.step()
     checkCollisions()
+    frameCount.value++
   }
   draw()
   animationId.value = requestAnimationFrame(step)
@@ -341,6 +499,8 @@ const reset = () => {
   if (engine.value) {
     engine.value.reset()
     particles.value = []
+    mergeMessages.value = []
+    frameCount.value = 0
   }
 }
 
@@ -373,6 +533,7 @@ const handleClick = (event: MouseEvent) => {
     isPickingVector.value = false
     pickingVectorBody.value = null
     pickingVectorTarget.value = null
+    pickingVectorVelocity.value = null
     pickingVectorClickCallback = null
     pickingVectorMoveCallback = null
     return
@@ -410,9 +571,11 @@ const handleMouseMove = (event: MouseEvent) => {
     const worldY = (mouseY - center.value.y) / scale.value
     pickingVectorTarget.value = { x: worldX, y: worldY }
     
+    const vx = worldX - pickingVectorBody.value.x
+    const vy = worldY - pickingVectorBody.value.y
+    pickingVectorVelocity.value = { vx, vy }
+    
     if (pickingVectorMoveCallback) {
-      const vx = worldX - pickingVectorBody.value.x
-      const vy = worldY - pickingVectorBody.value.y
       pickingVectorMoveCallback(vx, vy)
     }
   }
@@ -463,6 +626,7 @@ defineExpose({
   getEngine: () => engine.value,
   isRunning: computed(() => isRunning.value),
   canvasScale: computed(() => scale.value),
+  frameCount,
   selectedBodyId,
   clearSelection: () => {
     selectedBodyId.value = null
@@ -482,12 +646,14 @@ defineExpose({
     pickingVectorClickCallback = clickCallback
     pickingVectorMoveCallback = moveCallback || null
     pickingVectorTarget.value = null
+    pickingVectorVelocity.value = null
     isPickingVector.value = true
   },
   cancelPickingVector: () => {
     isPickingVector.value = false
     pickingVectorBody.value = null
     pickingVectorTarget.value = null
+    pickingVectorVelocity.value = null
     pickingVectorClickCallback = null
     pickingVectorMoveCallback = null
   }
@@ -510,7 +676,6 @@ defineExpose({
 .simulation-canvas {
   width: 100%;
   height: 100%;
-  min-height: 400px;
   border-radius: 8px;
   overflow: hidden;
   background: #0a0a0a;

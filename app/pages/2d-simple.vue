@@ -34,7 +34,7 @@ let originalValues = {
 
 const toggleSimulation = () => {
   if (!simRef.value) return
-  
+   
   if (isRunning.value) {
     simRef.value.stop()
     isRunning.value = false
@@ -159,10 +159,10 @@ const cancelPickVector = () => {
 </script>
 
 <template>
-  <UiContainer>
-    <UiHeader :level="1" class="mb-4">2D Simple Simulation</UiHeader>
+  <div class="page-content">
+    <UiHeader :level="1" class="page-title">2D Simple Simulation</UiHeader>
     
-    <div class="flex gap-2 mb-4">
+    <div class="flex gap-2 mb-2">
       <UiButton @click="toggleSimulation">
         {{ isRunning ? 'Pause' : 'Play' }}
       </UiButton>
@@ -171,15 +171,14 @@ const cancelPickVector = () => {
       <UiButton variant="ghost" @click="zoomOut">Zoom Out</UiButton>
     </div>
 
-    <UiCard>
-      <UiCardContent class="p-0">
-        <UiSimulationCanvas 
-          ref="simRef" 
-          :auto-start="false"
-          @body-click="handleBodyClick"
-        />
-      </UiCardContent>
-    </UiCard>
+    <div class="canvas-container">
+      <div v-if="isRunning" class="frame-counter">Frame: {{ simRef?.frameCount?.value || 0 }}</div>
+      <UiSimulationCanvas 
+        ref="simRef" 
+        :auto-start="false"
+        @body-click="handleBodyClick"
+      />
+    </div>
 
     <UiLeftDrawer v-if="isDrawerOpen" :title="selectedBody?.id || 'Body Details'">
       <template #actions>
@@ -245,10 +244,18 @@ const cancelPickVector = () => {
         </div>
       </div>
     </UiLeftDrawer>
-  </UiContainer>
+  </div>
 </template>
 
 <style scoped>
+.page-content {
+  padding: 8px 8px 0 8px;
+}
+
+.page-title {
+  margin: 0;
+}
+
 .drawer-content {
   display: flex;
   flex-direction: column;
@@ -316,5 +323,27 @@ const cancelPickVector = () => {
   border-radius: 4px;
   color: var(--foreground);
   width: 100%;
+}
+
+.canvas-container {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 300px);
+  background: #0a0a0a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.frame-counter {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font-family: monospace;
+  font-size: 12px;
+  border-radius: 4px;
+  z-index: 10;
 }
 </style>
