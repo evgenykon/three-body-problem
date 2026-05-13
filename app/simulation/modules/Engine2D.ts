@@ -208,6 +208,34 @@ export class Engine2D {
     this.config = { ...this.config, ...config }
   }
 
+  getConfig(): SimulationConfig {
+    return { ...this.config }
+  }
+
+  kineticEnergy(): number {
+    let ke = 0
+    this.bodies.forEach(body => {
+      const speed = Math.sqrt(body.velocity.x ** 2 + body.velocity.y ** 2)
+      ke += 0.5 * body.mass * speed * speed
+    })
+    return ke
+  }
+
+  potentialEnergy(): number {
+    let pe = 0
+    for (let i = 0; i < this.bodies.length; i++) {
+      for (let j = i + 1; j < this.bodies.length; j++) {
+        const a = this.bodies[i]!
+        const b = this.bodies[j]!
+        const dx = b.position.x - a.position.x
+        const dy = b.position.y - a.position.y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        pe -= this.config.gravitationalConstant * a.mass * b.mass / dist
+      }
+    }
+    return pe
+  }
+
   reset(): void {
     const bodiesToRestore = this.initialBodies.length > 0 ? this.initialBodies : this.defaultBodies
     if (bodiesToRestore.length > 0) {

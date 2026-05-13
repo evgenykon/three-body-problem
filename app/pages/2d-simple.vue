@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import type { Body, IntegrationMethod } from '~/simulation/Engine'
 
 definePageMeta({
@@ -28,7 +28,8 @@ const integrationMethods = [
 const presets = [
   { value: 'figure-eight', label: 'Figure Eight' },
   { value: 'triangle', label: 'Triangle' },
-  { value: 'butterfly', label: 'Butterfly I' }
+  { value: 'moth', label: 'Moth I' },
+  { value: 'dragon', label: 'Dragon I' }
 ]
 
 const presetBodies = {
@@ -42,10 +43,15 @@ const presetBodies = {
     { id: 'body2', position: { x: -40, y: 69.28 }, velocity: { x: -9.31, y: -5.37 }, mass: 200, radius: 15, color: '#4ecdc4' },
     { id: 'body3', position: { x: -40, y: -69.28 }, velocity: { x: 9.31, y: -5.37 }, mass: 200, radius: 15, color: '#45b7d1' }
   ],
-  'butterfly': [
-    { id: 'body1', position: { x: -300, y: 0 }, velocity: { x: 2.24, y: 0.92 }, mass: 200, radius: 15, color: '#ff6b6b' },
-    { id: 'body2', position: { x: 300, y: 0 }, velocity: { x: 2.24, y: 0.92 }, mass: 200, radius: 15, color: '#4ecdc4' },
-    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -4.48, y: -1.83 }, mass: 200, radius: 15, color: '#45b7d1' }
+  'moth': [
+    { id: 'body1', position: { x: -200, y: 0 }, velocity: { x: 1.85, y: 2.89 }, mass: 200, radius: 15, color: '#ff6b6b' },
+    { id: 'body2', position: { x: 200, y: 0 }, velocity: { x: 1.85, y: 2.89 }, mass: 200, radius: 15, color: '#4ecdc4' },
+    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -3.71, y: -5.78 }, mass: 200, radius: 15, color: '#45b7d1' }
+  ],
+  'dragon': [
+    { id: 'body1', position: { x: -600, y: 0 }, velocity: { x: 2.14, y: 0.86 }, mass: 200, radius: 15, color: '#ff6b6b' },
+    { id: 'body2', position: { x: 600, y: 0 }, velocity: { x: 2.14, y: 0.86 }, mass: 200, radius: 15, color: '#4ecdc4' },
+    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -4.28, y: -1.73 }, mass: 200, radius: 15, color: '#45b7d1' }
   ]
 }
 
@@ -71,13 +77,14 @@ const loadPreset = () => {
   engine.setDefaultBodies(preset)
   frameCount.value = 0
   eventLog.value = []
-  eventLog.value.push(`Loaded preset: ${presets.find(p => p.value === selectedPreset.value)?.label}`)
+  logEvent(`Preset: ${presets.find(p => p.value === selectedPreset.value)?.label}`)
 }
 
 const updateGravity = () => {
   const engine = simRef.value?.getEngine?.()
   if (engine) {
     engine.setConfig({ gravitationalConstant: gravityConstant.value })
+    logEvent(`G changed to ${gravityConstant.value}`)
   }
 }
 
@@ -87,6 +94,38 @@ const updateIntegrationMethod = () => {
     engine.setConfig({ integrationMethod: integrationMethod.value })
   }
 }
+
+const getEngineData = () => {
+  const engine = simRef.value?.getEngine?.()
+  if (!engine) return null
+  const cfg = engine.getConfig()
+  const ke = engine.kineticEnergy()
+  const pe = engine.potentialEnergy()
+  const etot = ke + pe
+  const bodies = engine.getBodies().map((b: Body) =>
+    `${b.id}(m=${b.mass} p=(${b.position.x.toFixed(1)},${b.position.y.toFixed(1)}) v=(${b.velocity.x.toFixed(2)},${b.velocity.y.toFixed(2)}))`
+  ).join(' ')
+  return { ke, pe, etot, bodies, G: cfg.gravitationalConstant, method: cfg.integrationMethod, dt: cfg.timeStep }
+}
+
+const logEvent = (msg: string) => {
+  const data = getEngineData()
+  if (data) {
+    eventLog.value.push(`[${frameCount.value}][G=${data.G}][${data.method}][dt=${data.dt}] KE=${data.ke.toFixed(1)} PE=${data.pe.toFixed(1)} E=${data.etot.toFixed(1)} | ${msg} | ${data.bodies}`)
+  } else {
+    eventLog.value.push(`[${frameCount.value}] ${msg}`)
+  }
+}
+
+const logEnergySnapshot = () => {
+  if (!isRunning.value) return
+  const data = getEngineData()
+  if (data) {
+    eventLog.value.push(`[${frameCount.value}][G=${data.G}][${data.method}] KE=${data.ke.toFixed(1)} PE=${data.pe.toFixed(1)} E=${data.etot.toFixed(1)} | ${data.bodies}`)
+  }
+}
+
+let energyLogInterval: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
   setTimeout(() => {
@@ -104,12 +143,29 @@ const syncFrameCount = () => {
 watch(isRunning, (running) => {
   if (running) {
     syncFrameCount()
+    energyLogInterval = setInterval(logEnergySnapshot, 8000)
+  } else {
+    if (energyLogInterval) {
+      clearInterval(energyLogInterval)
+      energyLogInterval = null
+    }
   }
 })
 
 watch(integrationMethod, () => {
   updateIntegrationMethod()
+  logEvent('Method changed')
 })
+
+const logContentRef = ref<HTMLDivElement | null>(null)
+
+watch(eventLog, () => {
+  nextTick(() => {
+    if (logContentRef.value) {
+      logContentRef.value.scrollTop = logContentRef.value.scrollHeight
+    }
+  })
+}, { flush: 'post' })
 
 const editValues = ref({
   x: 0,
@@ -143,7 +199,7 @@ const toggleSimulation = () => {
 
 const onSimStop = (reason: string) => {
   isRunning.value = false
-  eventLog.value.push(`[${frameCount.value}] ${reason}`)
+  logEvent(reason)
 }
 
 const resetSimulation = () => {
@@ -261,6 +317,13 @@ const cancelPickVector = () => {
   isPickingVector.value = false
   simRef.value?.cancelPickingVector()
 }
+
+const copyLog = () => {
+  const text = eventLog.value.join('\n')
+  navigator.clipboard.writeText(text).then(() => {
+    eventLog.value.push(`[${frameCount.value}] Log copied to clipboard`)
+  })
+}
 </script>
 
 <template>
@@ -270,14 +333,14 @@ const cancelPickVector = () => {
 <div class="flex gap-2 mb-2 items-center">
       <span class="text-sm">G:</span>
       <input v-model.number="gravityConstant" class="input-field w-20" type="number" @change="updateGravity" />
+      <UiSelect v-model="selectedPreset" :options="presets" class="w-40" />
+      <span class="text-sm ml-2">Method:</span>
+      <UiSelect v-model="integrationMethod" :options="integrationMethods" class="w-36" />
+      <UiButton @click="loadPreset">Load</UiButton>
       <UiButton @click="toggleSimulation">
         {{ isRunning ? 'Pause' : 'Play' }}
       </UiButton>
       <UiButton variant="outline" @click="resetSimulation">Reset</UiButton>
-      <UiSelect v-model="selectedPreset" :options="presets" class="w-40" />
-      <UiButton @click="loadPreset">Load</UiButton>
-      <span class="text-sm ml-2">Method:</span>
-      <UiSelect v-model="integrationMethod" :options="integrationMethods" class="w-36" />
       <span class="flex-grow"></span>
       <UiButton variant="ghost" @click="zoomIn">Zoom In</UiButton>
       <UiButton variant="ghost" @click="zoomOut">Zoom Out</UiButton>
@@ -290,12 +353,18 @@ const cancelPickVector = () => {
         :auto-start="false"
         @body-click="handleBodyClick"
         @stop="onSimStop"
-        @event="(msg) => eventLog.push(`[${frameCount}] ${msg}`)"
+        @event="(msg) => logEvent(msg)"
       />
     </div>
 
     <div v-if="eventLog.length > 0" class="event-log">
-      <div v-for="(event, i) in eventLog" :key="i" class="event-item">{{ event }}</div>
+      <div class="event-log-header">
+        <span class="event-log-title">Event Log</span>
+        <UiButton variant="ghost" size="sm" class="copy-btn" @click="copyLog">Copy</UiButton>
+      </div>
+      <div ref="logContentRef" class="event-log-content">
+        <div v-for="(event, i) in eventLog" :key="i" class="event-item">{{ event }}</div>
+      </div>
     </div>
 
     <UiLeftDrawer v-if="isDrawerOpen" :title="selectedBody?.id || 'Body Details'">
@@ -368,6 +437,9 @@ const cancelPickVector = () => {
 <style scoped>
 .page-content {
   padding: 8px 8px 0 8px;
+  height: calc(100vh - 4rem - 16px);
+  display: flex;
+  flex-direction: column;
 }
 
 .page-title {
@@ -446,7 +518,8 @@ const cancelPickVector = () => {
 .canvas-container {
   position: relative;
   width: 100%;
-  height: calc(100vh - 300px);
+  flex: 1;
+  min-height: 100px;
   background: #0a0a0a;
   border-radius: 8px;
   overflow: hidden;
@@ -467,17 +540,51 @@ const cancelPickVector = () => {
 
 .event-log {
   margin-top: 8px;
-  padding: 8px;
   background: var(--muted);
   border-radius: 4px;
   font-family: monospace;
   font-size: 11px;
-  max-height: 100px;
+  height: 200px;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.event-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.event-log-title {
+  font-size: 10px;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.event-log-content {
+  padding: 4px 8px;
   overflow-y: auto;
+  flex: 1;
 }
 
 .event-item {
-  padding: 2px 0;
+  padding: 1px 0;
   color: var(--foreground);
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.copy-btn {
+  font-size: 10px !important;
+  padding: 2px 6px !important;
+  height: auto !important;
+  min-height: 0 !important;
 }
 </style>

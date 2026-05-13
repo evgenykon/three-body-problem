@@ -152,8 +152,8 @@ const checkCollisions = () => {
   
   for (let i = 0; i < bodies.length; i++) {
     for (let j = i + 1; j < bodies.length; j++) {
-      const a = bodies[i]
-      const b = bodies[j]
+      const a = bodies[i]!
+      const b = bodies[j]!
       
       if (toRemove.has(a.id) || toRemove.has(b.id)) continue
       
@@ -162,7 +162,9 @@ const checkCollisions = () => {
       const dist = Math.sqrt(dx * dx + dy * dy)
       
       if (dist < (a.radius + b.radius)) {
-        emit('event', `Collision: ${a.id} + ${b.id}`)
+        const fmt = (v: number) => v.toFixed(1)
+        const fmtV = (v: number) => v.toFixed(2)
+        emit('event', `Collision: ${a.id}(m=${a.mass} p=${fmt(a.position.x)},${fmt(a.position.y)} v=${fmtV(a.velocity.x)},${fmtV(a.velocity.y)}) + ${b.id}(m=${b.mass} p=${fmt(b.position.x)},${fmt(b.position.y)} v=${fmtV(b.velocity.x)},${fmtV(b.velocity.y)}) dist=${fmt(dist)}`)
         toRemove.add(a.id)
         toRemove.add(b.id)
         
@@ -193,15 +195,16 @@ const checkCollisions = () => {
           life: 1
         })
         
+        const mergedId = `merged-${Date.now()}`
         mergedBodies.push({
-          id: `merged-${Date.now()}`,
+          id: mergedId,
           position: { x: newX, y: newY },
           velocity: { x: newVx, y: newVy },
           mass: finalMass,
           radius: newRadius * Math.sqrt(finalMass / totalMass),
           color: a.color
         })
-        emit('event', `Created: ${mergedBodies[mergedBodies.length - 1].id} (mass: ${finalMass.toFixed(0)})`)
+        emit('event', `Merged: ${mergedId} m=${finalMass.toFixed(0)} p=${fmt(newX)},${fmt(newY)} v=${fmtV(newVx)},${fmtV(newVy)} dust=${dustPercent.toFixed(1)}% lost=${lostMass.toFixed(0)}`)
       }
     }
   }
