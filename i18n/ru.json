@@ -5,7 +5,16 @@
     "dashboard": "Главная",
     "uiDemo": "UI Демо",
     "simulations": "Симуляции",
-    "sim2d": "2D Простая"
+    "sim2d": "2D Простая",
+    "solutions": "Решения",
+    "solnNewton": "Формулировка Ньютона",
+    "solnEuler": "Решения Эйлера",
+    "solnLagrange": "Точки Лагранжа",
+    "solnPoincare": "Пуанкаре и хаос",
+    "solnSundman": "Ряд Сундмана",
+    "solnNumerical": "Численное интегрирование",
+    "solnPeriodic": "Периодические орбиты",
+    "solnMl": "Машинное обучение"
   },
   "home": {
     "title": "Задача трёх тел",

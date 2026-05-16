@@ -5,7 +5,16 @@
     "dashboard": "Dashboard",
     "uiDemo": "UI Demo",
     "simulations": "Simulations",
-    "sim2d": "2D Simple"
+    "sim2d": "2D Simple",
+    "solutions": "Solutions",
+    "solnNewton": "Newton's Formulation",
+    "solnEuler": "Euler's Solutions",
+    "solnLagrange": "Lagrange Points",
+    "solnPoincare": "Poincaré & Chaos",
+    "solnSundman": "Sundman's Series",
+    "solnNumerical": "Numerical Integration",
+    "solnPeriodic": "Periodic Orbits",
+    "solnMl": "Machine Learning"
   },
   "home": {
     "title": "Three Body Problem",

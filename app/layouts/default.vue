@@ -15,6 +15,17 @@ const simulations = [
   { page: '2d-simple', label: t('nav.sim2d'), to: '/2d-simple' },
 ]
 
+const solutions = [
+  { page: 'soln-newton', label: t('nav.solnNewton'), to: '/solutions/newton' },
+  { page: 'soln-euler', label: t('nav.solnEuler'), to: '/solutions/euler' },
+  { page: 'soln-lagrange', label: t('nav.solnLagrange'), to: '/solutions/lagrange' },
+  { page: 'soln-poincare', label: t('nav.solnPoincare'), to: '/solutions/poincare' },
+  { page: 'soln-sundman', label: t('nav.solnSundman'), to: '/solutions/sundman' },
+  { page: 'soln-numerical', label: t('nav.solnNumerical'), to: '/solutions/numerical' },
+  { page: 'soln-periodic', label: t('nav.solnPeriodic'), to: '/solutions/periodic' },
+  { page: 'soln-ml', label: t('nav.solnMl'), to: '/solutions/ml' },
+]
+
 const isActive = (to: string) => route.path === to
 const navigate = (to: string) => router.push(to)
 
@@ -62,6 +73,19 @@ const locales = [
         <div class="flex flex-col gap-1 mt-2">
           <div
             v-for="item in simulations"
+            :key="item.page"
+            class="nav-item"
+            :class="{ 'nav-item--active': isActive(item.to) }"
+            @click="navigate(item.to)"
+          >
+            {{ item.label }}
+          </div>
+        </div>
+
+        <UiHeader :level="4" class="mt-4">{{ t('nav.solutions') }}</UiHeader>
+        <div class="flex flex-col gap-1 mt-2">
+          <div
+            v-for="item in solutions"
             :key="item.page"
             class="nav-item"
             :class="{ 'nav-item--active': isActive(item.to) }"
