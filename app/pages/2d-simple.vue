@@ -28,9 +28,7 @@ const integrationMethods = [
 
 const presets = [
   { value: 'figure-eight', label: 'Figure Eight' },
-  { value: 'triangle', label: 'Triangle' },
-  { value: 'moth', label: 'Moth I' },
-  { value: 'dragon', label: 'Dragon I' }
+  { value: 'triangle', label: 'Triangle' }
 ]
 
 const presetBodies = {
@@ -44,16 +42,6 @@ const presetBodies = {
     { id: 'body2', position: { x: -40, y: 69.28 }, velocity: { x: -9.31, y: -5.37 }, mass: 200, radius: 15, color: '#4ecdc4' },
     { id: 'body3', position: { x: -40, y: -69.28 }, velocity: { x: 9.31, y: -5.37 }, mass: 200, radius: 15, color: '#45b7d1' }
   ],
-  'moth': [
-    { id: 'body1', position: { x: -200, y: 0 }, velocity: { x: 1.85, y: 2.89 }, mass: 200, radius: 15, color: '#ff6b6b' },
-    { id: 'body2', position: { x: 200, y: 0 }, velocity: { x: 1.85, y: 2.89 }, mass: 200, radius: 15, color: '#4ecdc4' },
-    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -3.71, y: -5.78 }, mass: 200, radius: 15, color: '#45b7d1' }
-  ],
-  'dragon': [
-    { id: 'body1', position: { x: -600, y: 0 }, velocity: { x: 2.14, y: 0.86 }, mass: 200, radius: 15, color: '#ff6b6b' },
-    { id: 'body2', position: { x: 600, y: 0 }, velocity: { x: 2.14, y: 0.86 }, mass: 200, radius: 15, color: '#4ecdc4' },
-    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -4.28, y: -1.73 }, mass: 200, radius: 15, color: '#45b7d1' }
-  ]
 }
 
 
