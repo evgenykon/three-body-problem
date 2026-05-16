@@ -37,7 +37,7 @@ const initStars = (width: number, height: number) => {
       vy: (Math.random() - 0.5) * 0.8,
       mass: Math.random() * 2 + 1,
       radius: Math.random() * 1.5 + 1,
-      color: colors[Math.floor(Math.random() * colors.length)]
+      color: colors[Math.floor(Math.random() * colors.length)]!
     })
   }
 }
@@ -51,20 +51,20 @@ const update = () => {
     for (let j = 0; j < stars.length; j++) {
       if (i === j) continue
       
-      const dx = stars[j].x - stars[i].x
-      const dy = stars[j].y - stars[i].y
+      const dx = stars[j]!.x - stars[i]!.x
+      const dy = stars[j]!.y - stars[i]!.y
       const distSq = dx * dx + dy * dy
       const dist = Math.sqrt(distSq)
       
       if (dist > 8) {
-        const force = (G * stars[i].mass * stars[j].mass) / distSq
+        const force = (G * stars[i]!.mass * stars[j]!.mass) / distSq
         fx += (force * dx) / dist
         fy += (force * dy) / dist
       }
     }
     
-    stars[i].vx += fx / stars[i].mass
-    stars[i].vy += fy / stars[i].mass
+    stars[i]!.vx += fx / stars[i]!.mass
+    stars[i]!.vy += fy / stars[i]!.mass
   }
   
   const width = canvasRef.value.width

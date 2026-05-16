@@ -18,6 +18,7 @@ const eventLog = ref<string[]>([])
 const selectedPreset = ref('triangle')
 const gravityConstant = ref(80)
 const integrationMethod = ref<IntegrationMethod>('euler')
+const isLogOpen = ref(false)
 
 const integrationMethods = [
   { value: 'euler', label: 'Euler' },
@@ -344,20 +345,24 @@ const copyLog = () => {
       <span class="flex-grow"></span>
       <UiButton variant="ghost" @click="zoomIn">Zoom In</UiButton>
       <UiButton variant="ghost" @click="zoomOut">Zoom Out</UiButton>
+      <UiButton :variant="isLogOpen ? 'active' : 'ghost'" @click="isLogOpen = !isLogOpen">Log</UiButton>
     </div>
 
-    <div class="canvas-container">
-      <div v-if="isRunning" class="frame-counter">Frame: {{ frameCount }}</div>
-      <UiSimulationCanvas 
-        ref="simRef" 
-        :auto-start="false"
-        @body-click="handleBodyClick"
-        @stop="onSimStop"
-        @event="(msg) => logEvent(msg)"
-      />
+    <div class="split-view">
+      <div class="canvas-slot">
+        <div class="canvas-wrapper">
+          <div v-if="isRunning" class="frame-counter">Frame: {{ frameCount }}</div>
+          <UiSimulationCanvas 
+            ref="simRef" 
+            :auto-start="false"
+            @body-click="handleBodyClick"
+            @stop="onSimStop"
+            @event="(msg) => logEvent(msg)"
+          />
+        </div>
+      </div>
     </div>
-
-    <div v-if="eventLog.length > 0" class="event-log">
+    <div v-if="isLogOpen" class="event-log">
       <div class="event-log-header">
         <span class="event-log-title">Event Log</span>
         <UiButton variant="ghost" size="sm" class="copy-btn" @click="copyLog">Copy</UiButton>
@@ -440,6 +445,7 @@ const copyLog = () => {
   height: calc(100vh - 4rem - 16px);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .page-title {
@@ -515,11 +521,25 @@ const copyLog = () => {
   width: 100%;
 }
 
-.canvas-container {
-  position: relative;
-  width: 100%;
+.split-view {
   flex: 1;
-  min-height: 100px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.canvas-slot {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-wrapper {
+  width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1;
   background: #0a0a0a;
   border-radius: 8px;
   overflow: hidden;
@@ -539,16 +559,19 @@ const copyLog = () => {
 }
 
 .event-log {
-  margin-top: 8px;
+  position: fixed;
+  bottom: 0;
+  left: 256px;
+  right: 0;
+  height: 50vh;
   background: var(--muted);
-  border-radius: 4px;
+  border: 1px solid var(--border);
   font-family: monospace;
   font-size: 11px;
-  height: 200px;
-  flex-shrink: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  z-index: 50;
 }
 
 .event-log-header {

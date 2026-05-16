@@ -74,8 +74,8 @@ export class Engine3D {
 
     for (let i = 0; i < this.bodies.length; i++) {
       for (let j = i + 1; j < this.bodies.length; j++) {
-        const bodyA = this.bodies[i]
-        const bodyB = this.bodies[j]
+        const bodyA = this.bodies[i]!
+        const bodyB = this.bodies[j]!
 
         const dx = bodyB.position.x - bodyA.position.x
         const dy = bodyB.position.y - bodyA.position.y
@@ -161,8 +161,8 @@ export class Engine3D {
 
     for (let i = 0; i < this.bodies.length; i++) {
       for (let j = i + 1; j < this.bodies.length; j++) {
-        const bodyA = this.bodies[i]
-        const bodyB = this.bodies[j]
+        const bodyA = this.bodies[i]!
+        const bodyB = this.bodies[j]!
 
         const dx = bodyB.position.x - bodyA.position.x
         const dy = bodyB.position.y - bodyA.position.y

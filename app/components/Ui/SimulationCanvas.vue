@@ -342,13 +342,13 @@ const draw = () => {
       ctx.strokeStyle = body.color + '40'
       ctx.lineWidth = 2
       
-      const startX = center.value.x + trail[0].x * scale.value
-      const startY = center.value.y + trail[0].y * scale.value
+      const startX = center.value.x + trail[0]!.x * scale.value
+      const startY = center.value.y + trail[0]!.y * scale.value
       ctx.moveTo(startX, startY)
       
       for (let i = 1; i < trail.length; i++) {
-        const x = center.value.x + trail[i].x * scale.value
-        const y = center.value.y + trail[i].y * scale.value
+        const x = center.value.x + trail[i]!.x * scale.value
+        const y = center.value.y + trail[i]!.y * scale.value
         ctx.lineTo(x, y)
       }
       ctx.stroke()
