@@ -2,6 +2,8 @@
 import { ref, watch, onMounted, nextTick } from 'vue'
 import type { Body, IntegrationMethod } from '~/simulation/Engine'
 
+const { t } = useI18n()
+
 definePageMeta({
   layout: 'default'
 })
@@ -21,14 +23,14 @@ const integrationMethod = ref<IntegrationMethod>('euler')
 const isLogOpen = ref(false)
 
 const integrationMethods = [
-  { value: 'euler', label: 'Euler' },
-  { value: 'rk4', label: 'RK4' },
-  { value: 'velocity-verlet', label: 'Velocity Verlet' }
+  { value: 'euler', label: t('simulation.methodEuler') },
+  { value: 'rk4', label: t('simulation.methodRK4') },
+  { value: 'velocity-verlet', label: t('simulation.methodVelocityVerlet') }
 ]
 
 const presets = [
-  { value: 'figure-eight', label: 'Figure Eight' },
-  { value: 'triangle', label: 'Triangle' }
+  { value: 'figure-eight', label: t('simulation.presetFigureEight') },
+  { value: 'triangle', label: t('simulation.presetTriangle') }
 ]
 
 const presetBodies = {
@@ -310,36 +312,36 @@ const cancelPickVector = () => {
 const copyLog = () => {
   const text = eventLog.value.join('\n')
   navigator.clipboard.writeText(text).then(() => {
-    eventLog.value.push(`[${frameCount.value}] Log copied to clipboard`)
+    eventLog.value.push(`[${frameCount.value}] ${t('simulation.copySuccess')}`)
   })
 }
 </script>
 
 <template>
   <div class="page-content">
-    <UiHeader :level="1" class="page-title">2D Simple Simulation</UiHeader>
+    <UiHeader :level="1" class="page-title">{{ t('simulation.title') }}</UiHeader>
     
 <div class="flex gap-2 mb-2 items-center">
-      <span class="text-sm">G:</span>
+      <span class="text-sm">{{ t('simulation.g') }}</span>
       <input v-model.number="gravityConstant" class="input-field w-20" type="number" @change="updateGravity" />
       <UiSelect v-model="selectedPreset" :options="presets" class="w-40" />
-      <span class="text-sm ml-2">Method:</span>
+      <span class="text-sm ml-2">{{ t('simulation.method') }}</span>
       <UiSelect v-model="integrationMethod" :options="integrationMethods" class="w-36" />
-      <UiButton @click="loadPreset">Load</UiButton>
+      <UiButton @click="loadPreset">{{ t('simulation.load') }}</UiButton>
       <UiButton @click="toggleSimulation">
-        {{ isRunning ? 'Pause' : 'Play' }}
+        {{ isRunning ? t('simulation.pause') : t('simulation.play') }}
       </UiButton>
-      <UiButton variant="outline" @click="resetSimulation">Reset</UiButton>
+      <UiButton variant="outline" @click="resetSimulation">{{ t('simulation.reset') }}</UiButton>
       <span class="flex-grow"></span>
       <UiButton variant="ghost" @click="zoomIn">Zoom In</UiButton>
       <UiButton variant="ghost" @click="zoomOut">Zoom Out</UiButton>
-      <UiButton :variant="isLogOpen ? 'active' : 'ghost'" @click="isLogOpen = !isLogOpen">Log</UiButton>
+      <UiButton :variant="isLogOpen ? 'active' : 'ghost'" @click="isLogOpen = !isLogOpen">{{ t('simulation.log') }}</UiButton>
     </div>
 
     <div class="split-view">
       <div class="canvas-slot">
         <div class="canvas-wrapper">
-          <div v-if="isRunning" class="frame-counter">Frame: {{ frameCount }}</div>
+          <div v-if="isRunning" class="frame-counter">{{ t('simulation.frame') }}: {{ frameCount }}</div>
           <UiSimulationCanvas 
             ref="simRef" 
             :auto-start="false"
@@ -352,15 +354,15 @@ const copyLog = () => {
     </div>
     <div v-if="isLogOpen" class="event-log">
       <div class="event-log-header">
-        <span class="event-log-title">Event Log</span>
-        <UiButton variant="ghost" size="sm" class="copy-btn" @click="copyLog">Copy</UiButton>
+          <span class="event-log-title">{{ t('simulation.eventLog') }}</span>
+          <UiButton variant="ghost" size="sm" class="copy-btn" @click="copyLog">{{ t('simulation.copy') }}</UiButton>
       </div>
       <div ref="logContentRef" class="event-log-content">
         <div v-for="(event, i) in eventLog" :key="i" class="event-item">{{ event }}</div>
       </div>
     </div>
 
-    <UiLeftDrawer v-if="isDrawerOpen" :title="selectedBody?.id || 'Body Details'">
+    <UiLeftDrawer v-if="isDrawerOpen" :title="selectedBody?.id || t('simulation.bodyDetails')">
       <template #actions>
         <UiButton variant="ghost" size="sm" @click="closeDrawer">✕</UiButton>
       </template>
@@ -369,18 +371,18 @@ const copyLog = () => {
           <UiCardContent class="card-content">
             <div class="input-row">
               <div class="input-pair">
-                <span class="label">X</span>
+                <span class="label">{{ t('simulation.x') }}</span>
                 <input v-model.number="editValues.x" class="input-field" type="number" step="0.1" />
               </div>
               <div class="input-pair">
-                <span class="label">Y</span>
+                <span class="label">{{ t('simulation.y') }}</span>
                 <input v-model.number="editValues.y" class="input-field" type="number" step="0.1" />
               </div>
               <UiButton 
                 :variant="isPickingPosition ? 'active' : 'ghost'" 
                 size="icon" 
                 class="pick-btn"
-                :title="isPickingPosition ? 'Picking position...' : 'Pick Position'"
+                :title="isPickingPosition ? t('simulation.pickingPosition') : t('simulation.pickPosition')"
                 @click="isPickingPosition ? cancelPickPosition() : startPickPosition()"
               >
                 ⊕
@@ -388,18 +390,18 @@ const copyLog = () => {
             </div>
             <div class="input-row">
               <div class="input-pair">
-                <span class="label">VX</span>
+                <span class="label">{{ t('simulation.vx') }}</span>
                 <input v-model.number="editValues.vx" class="input-field" type="number" step="0.01" />
               </div>
               <div class="input-pair">
-                <span class="label">VY</span>
+                <span class="label">{{ t('simulation.vy') }}</span>
                 <input v-model.number="editValues.vy" class="input-field" type="number" step="0.01" />
               </div>
               <UiButton 
                 :variant="isPickingVector ? 'active' : 'ghost'" 
                 size="icon" 
                 class="pick-btn"
-                :title="isPickingVector ? 'Picking vector...' : 'Pick Vector'"
+                :title="isPickingVector ? '...' : t('simulation.pickVector')"
                 @click="isPickingVector ? cancelPickVector() : startPickVector()"
               >
                 ⊕
@@ -407,11 +409,11 @@ const copyLog = () => {
             </div>
             <div class="input-grid">
               <div class="input-item">
-                <span class="label">Mass</span>
+                <span class="label">{{ t('simulation.mass') }}</span>
                 <input v-model.number="editValues.mass" class="input-field" type="number" />
               </div>
               <div class="input-item">
-                <span class="label">Radius</span>
+                <span class="label">{{ t('simulation.radius') }}</span>
                 <input v-model.number="editValues.radius" class="input-field" type="number" />
               </div>
             </div>
@@ -419,8 +421,8 @@ const copyLog = () => {
         </UiCard>
         
         <div class="action-col">
-          <UiButton @click="applyChanges">Apply</UiButton>
-          <UiButton variant="ghost" @click="closeDrawer">Close</UiButton>
+          <UiButton @click="applyChanges">{{ t('simulation.apply') }}</UiButton>
+          <UiButton variant="ghost" @click="closeDrawer">{{ t('simulation.close') }}</UiButton>
         </div>
       </div>
     </UiLeftDrawer>

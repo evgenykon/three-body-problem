@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "title": "Three Body Problem",
+    "menu": "Menu",
+    "dashboard": "Dashboard",
+    "uiDemo": "UI Demo",
+    "simulations": "Simulations",
+    "sim2d": "2D Simple"
+  },
+  "home": {
+    "title": "Three Body Problem",
+    "description": "Explore the chaotic dynamics of three gravitational bodies in space."
+  },
+  "info": {
+    "title": "About the Three-Body Problem",
+    "whatTitle": "What Is It?",
+    "whatText": "The three-body problem is a classic problem in classical mechanics that asks: given three celestial bodies with known masses, positions, and velocities, can we predict their future motion under mutual gravitational attraction?",
+    "chaosTitle": "Chaotic Nature",
+    "chaosText": "Unlike the two-body problem, the three-body problem has no general closed-form solution. The system is chaotic — tiny changes in initial conditions lead to dramatically different outcomes, making long-term prediction impossible.",
+    "historyTitle": "Historical Significance",
+    "historyText": "First studied by Isaac Newton, the three-body problem has challenged physicists and mathematicians for centuries. Henri Poincaré discovered chaos theory while studying it. Today it remains relevant for orbital mechanics, astrophysics, and space mission planning."
+  },
+  "simulation": {
+    "title": "2D Simple Simulation",
+    "g": "G:",
+    "method": "Method:",
+    "load": "Load",
+    "play": "Play",
+    "pause": "Pause",
+    "reset": "Reset",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "log": "Log",
+    "eventLog": "Event Log",
+    "copy": "Copy",
+    "frame": "Frame",
+    "bodyDetails": "Body Details",
+    "x": "X",
+    "y": "Y",
+    "vx": "VX",
+    "vy": "VY",
+    "mass": "Mass",
+    "radius": "Radius",
+    "apply": "Apply",
+    "close": "Close",
+    "pickPosition": "Pick Position",
+    "pickingPosition": "Picking position...",
+    "pickVector": "Pick Vector",
+    "copySuccess": "Log copied to clipboard",
+    "presetFigureEight": "Figure Eight",
+    "presetTriangle": "Triangle",
+    "methodEuler": "Euler",
+    "methodRK4": "RK4",
+    "methodVelocityVerlet": "Velocity Verlet"
+  }
+}

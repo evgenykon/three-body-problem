@@ -15,7 +15,18 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@nuxt/icon",
     "@nuxt/fonts",
+    "@nuxtjs/i18n",
   ],
+
+  i18n: {
+    locales: [
+      { code: "en", name: "English", file: "en.json" },
+      { code: "ru", name: "Русский", file: "ru.json" },
+    ],
+    defaultLocale: "en",
+    langDir: "../i18n",
+    strategy: "no_prefix",
+  },
 
   components: true,
 
