@@ -430,10 +430,10 @@ const draw = () => {
       ctx.moveTo(x, y)
       ctx.lineTo(arrowX, arrowY)
       ctx.strokeStyle = '#ffffff'
-      ctx.lineWidth = 2
+      ctx.lineWidth = Math.max(0.3, Math.min(1.2, 0.7))
       ctx.stroke()
       
-      const arrowSize = 8
+      const arrowSize = Math.max(3, Math.min(10, scale.value * 0.05))
       ctx.beginPath()
       ctx.moveTo(arrowX, arrowY)
       ctx.lineTo(
