@@ -57,6 +57,20 @@
     "entry7t": "Machine Learning & AI",
     "entry7d": "Modern ML techniques learn effective Hamiltonians and discover novel periodic orbits from data, pushing the boundary of what can be predicted in chaotic regimes."
   },
+  "newton": {
+    "title": "Newton's Formulation",
+    "intro": "In 1687, Isaac Newton published his magnum opus — Philosophiæ Naturalis Principia Mathematica (Mathematical Principles of Natural Philosophy). In this work, he formulated the law of universal gravitation and the laws of motion, laying the foundations of classical mechanics. It is here that the three-body problem was first posed: Newton noticed that the gravitational interaction of three celestial bodies defies precise analytical description.",
+    "lawTitle": "Law of Universal Gravitation",
+    "lawText": "At the core of Newton's formulation lies the law of universal gravitation. Two bodies with masses m₁ and m₂, separated by distance r, attract each other with a force:",
+    "lawDetail": "where G is the gravitational constant. The force acts along the line connecting the centers of mass of the two bodies.",
+    "equationsTitle": "Equations of Motion",
+    "equationsText": "For a system of N bodies, Newton's second law yields a system of differential equations:",
+    "equationsDetail": "For three bodies (i = 1,2,3) we obtain three second-order vector equations, equivalent to eighteen first-order scalar differential equations. This is the mathematical formulation of the three-body problem.",
+    "systemTitle": "Why Is It Difficult?",
+    "systemText": "Unlike the two-body problem, which has an elegant analytic solution (Kepler's laws), the three-body problem has no general closed-form solution. Newton understood this difficulty but lacked the analytical tools to overcome it. It would take over two centuries before Henri Poincaré proved that the three-body problem is generally non-integrable and exhibits chaotic behavior.",
+    "simulationTitle": "Simulation",
+    "simulationText": "Below you can run a simulation of three bodies governed by Newton's laws. Try different initial conditions and integration methods to see how gravity shapes their trajectories."
+  },
   "simulation": {
     "title": "2D Simple Simulation",
     "g": "G:",

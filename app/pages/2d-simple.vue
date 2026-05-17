@@ -51,21 +51,9 @@ const loadPreset = () => {
   const preset = presetBodies[selectedPreset.value as keyof typeof presetBodies]
   if (!preset || !simRef.value) return
   
-  const engine = simRef.value.getEngine?.()
-  if (!engine) return
-  
   simRef.value.stop()
   isRunning.value = false
-  
-  engine.getBodies().forEach((b: Body) => {
-    engine.removeBody(b.id)
-  })
-  
-  preset.forEach((body) => {
-    engine.addBody({ ...body })
-  })
-  
-  engine.setDefaultBodies(preset)
+  simRef.value.setBodies(preset)
   frameCount.value = 0
   eventLog.value = []
   logEvent(`Preset: ${presets.find(p => p.value === selectedPreset.value)?.label}`)
@@ -148,6 +136,12 @@ watch(integrationMethod, () => {
   logEvent('Method changed')
 })
 
+watch(selectedPreset, () => {
+  gravityConstant.value = 80
+  integrationMethod.value = 'euler'
+  loadPreset()
+})
+
 const logContentRef = ref<HTMLDivElement | null>(null)
 
 watch(eventLog, () => {
@@ -188,9 +182,21 @@ const toggleSimulation = () => {
   }
 }
 
-const onSimStop = (reason: string) => {
+const onSimEnd = (reason: string) => {
   isRunning.value = false
   logEvent(reason)
+}
+
+const onSimStart = () => {
+  logEvent('Simulation started')
+}
+
+const onSimCollision = (bodyA: Body, bodyB: Body) => {
+  logEvent(`Collision: ${bodyA.id} + ${bodyB.id}`)
+}
+
+const onSimEjection = (body: Body) => {
+  logEvent(`Ejection: ${body.id}`)
 }
 
 const resetSimulation = () => {
@@ -327,7 +333,6 @@ const copyLog = () => {
       <UiSelect v-model="selectedPreset" :options="presets" class="w-40" />
       <span class="text-sm ml-2">{{ t('simulation.method') }}</span>
       <UiSelect v-model="integrationMethod" :options="integrationMethods" class="w-36" />
-      <UiButton @click="loadPreset">{{ t('simulation.load') }}</UiButton>
       <UiButton @click="toggleSimulation">
         {{ isRunning ? t('simulation.pause') : t('simulation.play') }}
       </UiButton>
@@ -342,12 +347,17 @@ const copyLog = () => {
       <div class="canvas-slot">
         <div class="canvas-wrapper">
           <div v-if="isRunning" class="frame-counter">{{ t('simulation.frame') }}: {{ frameCount }}</div>
-          <UiSimulationCanvas 
-            ref="simRef" 
+          <UiThreeBodySimulation
+            ref="simRef"
+            :bodies="presetBodies[selectedPreset as keyof typeof presetBodies]"
+            :integration-method="integrationMethod"
+            :gravitational-constant="gravityConstant"
             :auto-start="false"
             @body-click="handleBodyClick"
-            @stop="onSimStop"
-            @event="(msg) => logEvent(msg)"
+            @start="onSimStart"
+            @end="onSimEnd"
+            @collision="onSimCollision"
+            @ejection="onSimEjection"
           />
         </div>
       </div>
