@@ -25,9 +25,9 @@ const methodOptions = [
 ]
 
 const presetBodies: BodyConfig[] = [
-  { id: 'body1', position: { x: 80, y: 0 }, velocity: { x: 0, y: 10.75 }, mass: 200, radius: 14, color: '#ff6b6b' },
-  { id: 'body2', position: { x: -40, y: 69.28 }, velocity: { x: -9.31, y: -5.37 }, mass: 200, radius: 14, color: '#4ecdc4' },
-  { id: 'body3', position: { x: -40, y: -69.28 }, velocity: { x: 9.31, y: -5.37 }, mass: 200, radius: 14, color: '#45b7d1' },
+  { id: 'body1', position: { x: 80, y: 0 }, velocity: { x: 0, y: 86 }, mass: 200, radius: 14, color: '#ff6b6b' },
+  { id: 'body2', position: { x: -40, y: 69.28 }, velocity: { x: -74.48, y: -43 }, mass: 200, radius: 14, color: '#4ecdc4' },
+  { id: 'body3', position: { x: -40, y: -69.28 }, velocity: { x: 74.48, y: -43 }, mass: 200, radius: 14, color: '#45b7d1' },
 ]
 
 const toggleSimulation = () => {
@@ -125,6 +125,7 @@ const resetSimulation = () => {
                 :key="integrationMethod"
                 :bodies="presetBodies"
                 :integration-method="integrationMethod"
+                :gravitational-constant="5120"
                 v-model:zoom="zoom"
                 :auto-start="false"
               />
