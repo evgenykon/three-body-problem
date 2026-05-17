@@ -262,6 +262,14 @@ body {
 scrollbar-width: thin;
 scrollbar-color: var(--border) transparent;
 
+.equation-block {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.equation-block::-webkit-scrollbar {
+  display: none;
+}
+
 .placeholder\:text-muted-foreground::placeholder { color: var(--muted-foreground); }
 .file\:border-0::file-selector-button { border-width: 0; }
 .file\:bg-transparent::file-selector-button { background: transparent; }

@@ -11,21 +11,20 @@ definePageMeta({
 
 const simRef = ref<any>(null)
 const isRunning = ref(false)
-const integrationMethod = ref<IntegrationMethod>('newton')
+const integrationMethod = ref<IntegrationMethod>('velocity-verlet')
 
-const lawEquation = 'F = G \\frac{m_1 m_2}{r^2}'
-const motionEquation = 'm_i \\frac{d^2 \\mathbf{r}_i}{dt^2} = \\sum_{j \\neq i} G \\frac{m_i m_j}{|\\mathbf{r}_j - \\mathbf{r}_i|^3} (\\mathbf{r}_j - \\mathbf{r}_i)'
+const omegaExpr = '\\omega = \\sqrt{\\frac{G(m_1 + m_2)}{a^3}} = \\sqrt{\\frac{80 \\cdot 510}{60^3}} = \\sqrt{0.1889} \\approx 0.435'
+
+const l4Expr = '\\begin{aligned} L_4 &= \\left(\\frac{x_1 + x_2}{2},\\; a\\frac{\\sqrt{3}}{2}\\right) = (28.82,\\; 51.96) \\\\ \\mathbf{v}_{L_4} &= \\boldsymbol{\\omega} \\times \\mathbf{r}_{L_4} = (-22.58,\\; 12.53) \\end{aligned}'
+
+const stabilityExpr = '\\mu = \\frac{m_2}{m_1 + m_2} = \\frac{10}{510} \\approx 0.02 < 0.0385'
 
 const presetBodies: BodyConfig[] = [
-  { id: 'body1', position: { x: 40, y: 0 }, velocity: { x: 0, y: 10 }, mass: 200, radius: 14, color: '#ff6b6b' },
-  { id: 'body2', position: { x: -40, y: 0 }, velocity: { x: 0, y: -10 }, mass: 200, radius: 14, color: '#4ecdc4' },
+  { id: 'primary', position: { x: -1.18, y: 0 }, velocity: { x: 0, y: -0.511 }, mass: 500, radius: 18, color: '#ff6b6b' },
+  { id: 'secondary', position: { x: 58.82, y: 0 }, velocity: { x: 0, y: 25.57 }, mass: 10, radius: 6, color: '#4ecdc4' },
+  { id: 'l4', position: { x: 28.82, y: 51.96 }, velocity: { x: -22.58, y: 12.53 }, mass: 0.1, radius: 3, color: '#45b7d1' },
+  { id: 'l5', position: { x: 28.82, y: -51.96 }, velocity: { x: 22.58, y: 12.53 }, mass: 0.1, radius: 3, color: '#f9ca24' },
 ]
-
-const numForceExpr = 'F = G \\frac{m_1 m_2}{r^2} = 80 \\cdot \\frac{200 \\cdot 200}{80^2} = 500'
-
-const numKeplerExpr = '\\begin{aligned} T^2 &= \\frac{4\\pi^2 a^3}{G(m_1 + m_2)} = \\frac{4\\pi^2 \\cdot 80^3}{80 \\cdot 400} = 64\\pi^2 \\\\ T &= 8\\pi \\approx 25.13 \\end{aligned}'
-
-const numVelocityExpr = 'v = \\frac{2\\pi a_1}{T} = \\frac{2\\pi \\cdot 40}{8\\pi} = 10'
 
 const toggleSimulation = () => {
   if (!simRef.value) return
@@ -48,78 +47,75 @@ const resetSimulation = () => {
 
 <template>
   <UiContainer>
-    <article class="newton-page">
-      <UiHeader :level="1" class="page-title">{{ t('newton.title') }}</UiHeader>
+    <article class="lagrange-page">
+      <UiHeader :level="1" class="page-title">{{ t('lagrange.title') }}</UiHeader>
 
       <section class="content-section">
         <UiCard>
           <UiCardContent>
-            <p class="lead-text">{{ t('newton.intro') }}</p>
+            <p class="lead-text">{{ t('lagrange.intro') }}</p>
           </UiCardContent>
         </UiCard>
       </section>
 
       <section class="content-section">
-        <UiHeader :level="2" class="section-title">{{ t('newton.lawTitle') }}</UiHeader>
+        <UiHeader :level="2" class="section-title">{{ t('lagrange.conceptTitle') }}</UiHeader>
         <UiCard>
           <UiCardContent>
-            <p>{{ t('newton.lawText') }}</p>
+            <p>{{ t('lagrange.conceptText') }}</p>
+          </UiCardContent>
+        </UiCard>
+      </section>
+
+      <section class="content-section">
+        <UiHeader :level="2" class="section-title">{{ t('lagrange.collinearTitle') }}</UiHeader>
+        <UiCard>
+          <UiCardContent>
+            <p>{{ t('lagrange.collinearText') }}</p>
+          </UiCardContent>
+        </UiCard>
+      </section>
+
+      <section class="content-section">
+        <UiHeader :level="2" class="section-title">{{ t('lagrange.triangularTitle') }}</UiHeader>
+        <UiCard>
+          <UiCardContent>
+            <p>{{ t('lagrange.triangularText') }}</p>
             <div class="equation-block">
-              <UiKaTeX :expression="lawEquation" :display-mode="true" />
+              <UiKaTeX :expression="stabilityExpr" :display-mode="true" />
             </div>
-            <p>{{ t('newton.lawDetail') }}</p>
           </UiCardContent>
         </UiCard>
       </section>
 
       <section class="content-section">
-        <UiHeader :level="2" class="section-title">{{ t('newton.equationsTitle') }}</UiHeader>
+        <UiHeader :level="2" class="section-title">{{ t('lagrange.significanceTitle') }}</UiHeader>
         <UiCard>
           <UiCardContent>
-            <p>{{ t('newton.equationsText') }}</p>
-            <div class="equation-block">
-              <UiKaTeX :expression="motionEquation" :display-mode="true" />
-            </div>
-            <p>{{ t('newton.equationsDetail') }}</p>
-          </UiCardContent>
-        </UiCard>
-      </section>
-
-      <section class="content-section">
-        <UiHeader :level="2" class="section-title">{{ t('newton.systemTitle') }}</UiHeader>
-        <UiCard>
-          <UiCardContent>
-            <p>{{ t('newton.systemText') }}</p>
+            <p>{{ t('lagrange.significanceText') }}</p>
           </UiCardContent>
         </UiCard>
       </section>
 
       <section class="content-section numerical-section">
-        <UiHeader :level="2" class="section-title">{{ t('newton.numericalTitle') }}</UiHeader>
+        <UiHeader :level="2" class="section-title">{{ t('lagrange.numericalTitle') }}</UiHeader>
         <UiCard>
           <UiCardContent>
-            <p>{{ t('newton.numericalText') }}</p>
-
-            <p>{{ t('newton.numericalForceText') }}</p>
+            <p>{{ t('lagrange.numericalText') }}</p>
             <div class="equation-block">
-              <UiKaTeX :expression="numForceExpr" :display-mode="true" />
+              <UiKaTeX :expression="omegaExpr" :display-mode="true" />
             </div>
 
-            <p>{{ t('newton.numericalKeplerText') }}</p>
+            <p>{{ t('lagrange.numericalL4Text') }}</p>
             <div class="equation-block">
-              <UiKaTeX :expression="numKeplerExpr" :display-mode="true" />
-            </div>
-
-            <p>{{ t('newton.numericalVelocityText') }}</p>
-            <div class="equation-block">
-              <UiKaTeX :expression="numVelocityExpr" :display-mode="true" />
+              <UiKaTeX :expression="l4Expr" :display-mode="true" />
             </div>
           </UiCardContent>
         </UiCard>
       </section>
 
       <section class="content-section simulation-section">
-        <UiHeader :level="2" class="section-title">{{ t('newton.simulationTitle') }}</UiHeader>
+        <UiHeader :level="2" class="section-title">{{ t('lagrange.simulationTitle') }}</UiHeader>
         <UiCard>
           <UiCardContent>
             <div class="sim-controls">
@@ -131,9 +127,9 @@ const resetSimulation = () => {
             <div class="canvas-container">
               <UiThreeBodySimulation
                 ref="simRef"
-                :zoom="2"
                 :bodies="presetBodies"
                 :integration-method="integrationMethod"
+                :zoom="2.2"
                 :auto-start="false"
               />
             </div>
@@ -145,7 +141,7 @@ const resetSimulation = () => {
 </template>
 
 <style scoped>
-.newton-page {
+.lagrange-page {
   padding: 24px 0;
   max-width: 800px;
   margin: 0 auto;
@@ -178,13 +174,6 @@ const resetSimulation = () => {
 
 .simulation-section {
   margin-top: 32px;
-}
-
-.simulation-text {
-  margin: 0 0 16px;
-  color: var(--muted-foreground);
-  font-size: 14px;
-  line-height: 1.6;
 }
 
 .sim-controls {
