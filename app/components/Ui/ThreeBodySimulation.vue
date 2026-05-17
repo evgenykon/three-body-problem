@@ -414,8 +414,8 @@ const draw = () => {
       const angle = Math.atan2(vy, vx)
       const arrowX = x + vx; const arrowY = y + vy
       ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(arrowX, arrowY)
-      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke()
-      const arrowSize = 8
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(0.3, Math.min(2, 2 / Math.max(1, scale.value))); ctx.stroke()
+      const arrowSize = Math.max(4, Math.min(12, scale.value * 0.06))
       ctx.beginPath()
       ctx.moveTo(arrowX, arrowY)
       ctx.lineTo(arrowX - arrowSize * Math.cos(angle - Math.PI / 6), arrowY - arrowSize * Math.sin(angle - Math.PI / 6))

@@ -26,7 +26,7 @@ export interface SimulationConfig {
 export const defaultConfig: SimulationConfig = {
   gravitationalConstant: 100,
   timeStep: 0.016,
-  softening: 5,
+  softening: 0.1,
   integrationMethod: 'euler',
   trailLength: 100,
 }
