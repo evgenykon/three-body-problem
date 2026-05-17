@@ -67,6 +67,7 @@ export class Engine2D {
       case 'velocity-verlet':
         this.stepVelocityVerlet()
         break
+      case 'newton':
       case 'euler':
       default:
         this.stepEuler()

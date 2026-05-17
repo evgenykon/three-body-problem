@@ -11,8 +11,7 @@ definePageMeta({
 
 const simRef = ref<any>(null)
 const isRunning = ref(false)
-const gravityConstant = ref(80)
-const integrationMethod = ref<IntegrationMethod>('euler')
+const integrationMethod = ref<IntegrationMethod>('newton')
 
 const lawEquation = 'F = G \\frac{m_1 m_2}{r^2}'
 const motionEquation = 'm_i \\frac{d^2 \\mathbf{r}_i}{dt^2} = \\sum_{j \\neq i} G \\frac{m_i m_j}{|\\mathbf{r}_j - \\mathbf{r}_i|^3} (\\mathbf{r}_j - \\mathbf{r}_i)'
@@ -94,12 +93,7 @@ const resetSimulation = () => {
         <UiHeader :level="2" class="section-title">{{ t('newton.simulationTitle') }}</UiHeader>
         <UiCard>
           <UiCardContent>
-            <p class="simulation-text">{{ t('newton.simulationText') }}</p>
             <div class="sim-controls">
-              <label class="control-label">
-                <span>G:</span>
-                <input v-model.number="gravityConstant" class="input-field" type="number" />
-              </label>
               <UiButton @click="toggleSimulation">
                 {{ isRunning ? t('simulation.pause') : t('simulation.play') }}
               </UiButton>
@@ -110,7 +104,6 @@ const resetSimulation = () => {
                 ref="simRef"
                 :bodies="presetBodies"
                 :integration-method="integrationMethod"
-                :gravitational-constant="gravityConstant"
                 :auto-start="false"
               />
             </div>
@@ -170,25 +163,6 @@ const resetSimulation = () => {
   gap: 8px;
   align-items: center;
   margin-bottom: 12px;
-}
-
-.control-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--foreground);
-}
-
-.input-field {
-  padding: 4px 6px;
-  font-size: 12px;
-  font-family: monospace;
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--foreground);
-  width: 64px;
 }
 
 .canvas-container {

@@ -12,7 +12,7 @@ export interface Body {
   color: string
 }
 
-export type IntegrationMethod = 'euler' | 'rk4' | 'velocity-verlet'
+export type IntegrationMethod = 'euler' | 'rk4' | 'velocity-verlet' | 'newton'
 
 export interface SimulationConfig {
   gravitationalConstant: number

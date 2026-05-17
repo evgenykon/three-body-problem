@@ -67,9 +67,8 @@
     "equationsText": "For a system of N bodies, Newton's second law yields a system of differential equations:",
     "equationsDetail": "For three bodies (i = 1,2,3) we obtain three second-order vector equations, equivalent to eighteen first-order scalar differential equations. This is the mathematical formulation of the three-body problem.",
     "systemTitle": "Why Is It Difficult?",
-    "systemText": "Unlike the two-body problem, which has an elegant analytic solution (Kepler's laws), the three-body problem has no general closed-form solution. Newton understood this difficulty but lacked the analytical tools to overcome it. It would take over two centuries before Henri Poincaré proved that the three-body problem is generally non-integrable and exhibits chaotic behavior.",
-    "simulationTitle": "Simulation",
-    "simulationText": "Below you can run a simulation of three bodies governed by Newton's laws. Try different initial conditions and integration methods to see how gravity shapes their trajectories."
+    "systemText": "Unlike the two-body problem, which has an elegant analytic solution (Kepler's laws), the three-body problem has no general closed-form solution. Newton understood this difficulty but lacked the analytical tools to overcome it. It would take over two centuries before Henri Poincaré proved that the three-body problem is generally non-integrable and exhibits chaotic behavior. This simulation uses the Euler method — the simplest numerical integration scheme, closest to Newton's original concept of motion under forces: acceleration is computed from force, then velocity is updated, followed by position.",
+    "simulationTitle": "Simulation"
   },
   "simulation": {
     "title": "2D Simple Simulation",
