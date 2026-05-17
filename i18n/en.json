@@ -70,6 +70,23 @@
     "systemText": "Unlike the two-body problem, which has an elegant analytic solution (Kepler's laws), the three-body problem has no general closed-form solution. Newton understood this difficulty but lacked the analytical tools to overcome it. It would take over two centuries before Henri Poincaré proved that the three-body problem is generally non-integrable and exhibits chaotic behavior. This simulation uses the Euler method — the simplest numerical integration scheme, closest to Newton's original concept of motion under forces: acceleration is computed from force, then velocity is updated, followed by position.",
     "simulationTitle": "Simulation"
   },
+  "euler": {
+    "title": "Euler's Solutions",
+    "intro": "In the 1760s, Leonhard Euler made the first serious attempt to solve the three-body problem after Newton's formulation. Euler introduced a crucial simplification — the restricted three-body problem, in which the mass of one body is negligible compared to the other two. This approximation proved extremely fruitful for celestial mechanics.",
+    "restrictedTitle": "Restricted Three-Body Problem",
+    "restrictedText": "Euler assumed that one of the three bodies has negligible mass (m₃ → 0) and does not affect the motion of the two massive bodies. The two massive bodies orbit their common center of mass following Kepler's laws, while the small body moves in their gravitational field. This simplification reduces the problem to the motion of a single body in a time-varying gravitational field.",
+    "eulerMethodTitle": "Euler's Method",
+    "eulerMethodText": "Euler also developed the simplest numerical integration method for ordinary differential equations (ODEs), now known as Euler's method. For an ODE system dy/dt = f(t, y), the method approximates the solution by moving forward along the tangent line given by the derivative f(t_n, y_n) at each point, using a fixed step size h.",
+    "significanceTitle": "Significance for the Three-Body Problem",
+    "significanceText": "Euler's work on the restricted three-body problem became the foundation for lunar theory and asteroid orbit calculations. His numerical integration method, though rarely used today in its pure form, remains the conceptual basis for more advanced methods. This simulation uses Euler's method as a tribute to his pioneering work.",
+    "numericalTitle": "Numerical Example",
+    "numericalText": "First Euler step (Δt = 0.016). At t = 0: body 1 at (10, 0), v = (0, 14.14), m = 100; body 2 at (−10, 0), v = (0, −14.14), m = 100; body 3 at (0, 120), v = (−11.49, 0), m = 0.1. G = 80 (for simulation convenience; real G = 6.674 × 10⁻¹¹).",
+    "numericalForceText": "Gravitational force between massive bodies 1 and 2:",
+    "numericalBody1Text": "Body 1: acceleration from F₁₂, Euler step:",
+    "numericalBody2Text": "Body 2: acceleration from F₁₂ (symmetric, opposite direction):",
+    "numericalBody3Text": "Body 3: net acceleration from bodies 1 and 2 (x-components cancel):",
+    "simulationTitle": "Simulation"
+  },
   "simulation": {
     "title": "2D Simple Simulation",
     "g": "G:",
