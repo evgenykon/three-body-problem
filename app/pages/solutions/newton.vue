@@ -17,10 +17,15 @@ const lawEquation = 'F = G \\frac{m_1 m_2}{r^2}'
 const motionEquation = 'm_i \\frac{d^2 \\mathbf{r}_i}{dt^2} = \\sum_{j \\neq i} G \\frac{m_i m_j}{|\\mathbf{r}_j - \\mathbf{r}_i|^3} (\\mathbf{r}_j - \\mathbf{r}_i)'
 
 const presetBodies: BodyConfig[] = [
-  { id: 'body1', position: { x: 80, y: 0 }, velocity: { x: 0, y: 10.75 }, mass: 200, radius: 15, color: '#ff6b6b' },
-  { id: 'body2', position: { x: -40, y: 69.28 }, velocity: { x: -9.31, y: -5.37 }, mass: 200, radius: 15, color: '#4ecdc4' },
-  { id: 'body3', position: { x: -40, y: -69.28 }, velocity: { x: 9.31, y: -5.37 }, mass: 200, radius: 15, color: '#45b7d1' },
+  { id: 'body1', position: { x: 40, y: 0 }, velocity: { x: 0, y: 10 }, mass: 200, radius: 14, color: '#ff6b6b' },
+  { id: 'body2', position: { x: -40, y: 0 }, velocity: { x: 0, y: -10 }, mass: 200, radius: 14, color: '#4ecdc4' },
 ]
+
+const numForceExpr = 'F = G \\frac{m_1 m_2}{r^2} = 80 \\cdot \\frac{200 \\cdot 200}{80^2} = 500'
+
+const numKeplerExpr = '\\begin{aligned} T^2 &= \\frac{4\\pi^2 a^3}{G(m_1 + m_2)} = \\frac{4\\pi^2 \\cdot 80^3}{80 \\cdot 400} = 64\\pi^2 \\\\ T &= 8\\pi \\approx 25.13 \\end{aligned}'
+
+const numVelocityExpr = 'v = \\frac{2\\pi a_1}{T} = \\frac{2\\pi \\cdot 40}{8\\pi} = 10'
 
 const toggleSimulation = () => {
   if (!simRef.value) return
@@ -89,6 +94,30 @@ const resetSimulation = () => {
         </UiCard>
       </section>
 
+      <section class="content-section numerical-section">
+        <UiHeader :level="2" class="section-title">{{ t('newton.numericalTitle') }}</UiHeader>
+        <UiCard>
+          <UiCardContent>
+            <p>{{ t('newton.numericalText') }}</p>
+
+            <p>{{ t('newton.numericalForceText') }}</p>
+            <div class="equation-block">
+              <UiKaTeX :expression="numForceExpr" :display-mode="true" />
+            </div>
+
+            <p>{{ t('newton.numericalKeplerText') }}</p>
+            <div class="equation-block">
+              <UiKaTeX :expression="numKeplerExpr" :display-mode="true" />
+            </div>
+
+            <p>{{ t('newton.numericalVelocityText') }}</p>
+            <div class="equation-block">
+              <UiKaTeX :expression="numVelocityExpr" :display-mode="true" />
+            </div>
+          </UiCardContent>
+        </UiCard>
+      </section>
+
       <section class="content-section simulation-section">
         <UiHeader :level="2" class="section-title">{{ t('newton.simulationTitle') }}</UiHeader>
         <UiCard>
@@ -102,6 +131,7 @@ const resetSimulation = () => {
             <div class="canvas-container">
               <UiThreeBodySimulation
                 ref="simRef"
+                :zoom="2"
                 :bodies="presetBodies"
                 :integration-method="integrationMethod"
                 :auto-start="false"

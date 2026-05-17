@@ -68,7 +68,12 @@
     "equationsDetail": "For three bodies (i = 1,2,3) we obtain three second-order vector equations, equivalent to eighteen first-order scalar differential equations. This is the mathematical formulation of the three-body problem.",
     "systemTitle": "Why Is It Difficult?",
     "systemText": "Unlike the two-body problem, which has an elegant analytic solution (Kepler's laws), the three-body problem has no general closed-form solution. Newton understood this difficulty but lacked the analytical tools to overcome it. It would take over two centuries before Henri Poincaré proved that the three-body problem is generally non-integrable and exhibits chaotic behavior. This simulation uses the Euler method — the simplest numerical integration scheme, closest to Newton's original concept of motion under forces: acceleration is computed from force, then velocity is updated, followed by position.",
-    "simulationTitle": "Simulation"
+    "simulationTitle": "Simulation",
+    "numericalTitle": "Numerical Example",
+    "numericalText": "For the two-body problem, Newton derived an exact analytical solution — Kepler's laws. Orbits are conic sections, and positions can be computed exactly at any time. For the three-body problem, no analytical solution exists, so the simulation uses 2 bodies with calculations following Kepler's laws. Let's examine a binary system of two equal-mass bodies on circular orbits: body 1 at (40, 0), m = 200; body 2 at (−40, 0), m = 200. G = 80.",
+    "numericalForceText": "Gravitational force between the bodies:",
+    "numericalKeplerText": "Kepler's third law gives the orbital period (a = 80 is the semi-major axis of the relative orbit):",
+    "numericalVelocityText": "Orbital velocity of each body (a₁ = 40 is the distance to the center of mass):"
   },
   "euler": {
     "title": "Euler's Solutions",
