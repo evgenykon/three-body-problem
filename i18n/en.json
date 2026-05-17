@@ -187,5 +187,43 @@
     "methodEuler": "Euler",
     "methodRK4": "RK4",
     "methodVelocityVerlet": "Velocity Verlet"
+  },
+  "numerical": {
+    "title": "Numerical Integration",
+    "intro": "The three-body problem generally has no analytical solution, but it can be solved numerically — time is discretized and body positions are computed step by step.",
+    "eulerTitle": "Euler's Method",
+    "eulerText": "The simplest numerical integration method. At each step, acceleration is assumed constant: position and velocity are updated along the tangent line to the true trajectory.\n\nLocal truncation error (per step) — O(h²), where h is the time step. Global error (after integrating over a fixed interval) — O(h). To halve the error, you must halve the step size. The method is not symplectic: energy monotonically increases over time, causing orbits to blow up.",
+    "rk4Title": "Runge-Kutta 4th Order",
+    "rk4Text": "The classical fourth-order Runge-Kutta method. Each step computes four intermediate accelerations: at the start, at two trial midpoints, and at the end. These are then averaged with weights (1:2:2:1).\n\nLocal error — O(h⁵), global — O(h⁴). To halve the error, you need only reduce the step by ~16%. But the method is not symplectic: over long timescales, energy slowly drifts (usually downward). RK4 is a good choice for short intervals or when high per-step accuracy is needed.",
+    "verletTitle": "Velocity-Verlet",
+    "verletText": "A second-order symplectic integrator. Unlike Euler and RK4, Velocity-Verlet preserves the geometric structure of phase space (the symplectic form).\n\n«Symplectic» means the method conserves phase space volume — analogous to area preservation in phase space. In practice, this yields energy conservation over long timescales: energy does not systematically drift, but merely oscillates around the true value. The method is also time-reversible.\n\nVelocity-Verlet is the gold standard for celestial mechanics. Its global error is O(h²), but due to its symplectic properties, it outperforms RK4 of the same order over intervals of thousands or millions of steps.",
+    "comparisonTitle": "Comparison",
+    "comparisonText": "Euler's method accumulates error quickly and does not conserve energy. RK4 is accurate over short intervals but does not systematically conserve energy. Velocity-Verlet is the best choice for gravitational problems: it is symplectic (conserves phase space volume) and provides good energy conservation over long times.",
+    "simulationTitle": "Simulation",
+    "simulationText": "Switch the integration method and observe how well the orbit is preserved."
+  },
+  "periodic": {
+    "title": "Periodic Orbits",
+    "intro": "Despite the chaotic nature of the three-body problem, exact periodic solutions exist — orbits that repeat their trajectory after a fixed time interval.",
+    "figure8Title": "Figure-Eight Orbit",
+    "figure8Text": "In 2000, Chenciner and Montgomery discovered a remarkable periodic orbit: three equal-mass bodies trace a figure-eight trajectory. The solution is stable and exists for a wide range of mass ratios.",
+    "lagrangeTitle": "Lagrange Triangle",
+    "lagrangeText": "Lagrange found that three bodies can reside at the vertices of an equilateral triangle rotating around the common center of mass. This is the only exact analytical solution of the three-body problem (excluding degenerate cases).",
+    "eulerTitle": "Euler's Collinear Solutions",
+    "eulerText": "Euler discovered solutions where the three bodies always lie on a straight line, rotating around the common center of mass. There are three such configurations, depending on which body lies between the other two.",
+    "significanceTitle": "Significance",
+    "significanceText": "Periodic orbits serve as building blocks for understanding the phase space of the three-body problem. They form the skeleton around which the full variety of possible trajectories is organized.",
+    "simulationTitle": "Figure-Eight Orbit",
+    "simulationText": "Three equal-mass bodies (m = 1) with Chenciner-Montgomery initial conditions."
+  },
+  "ml": {
+    "title": "Machine Learning",
+    "intro": "Modern machine learning methods offer an alternative approach to the three-body problem: neural networks can predict trajectories without explicitly solving differential equations.",
+    "approachTitle": "Approach",
+    "approachText": "A neural network is trained on numerical integration data: input is the initial positions and velocities, output is the positions after a given time interval. Once trained, the network can predict system evolution significantly faster than a classical integrator.",
+    "limitsTitle": "Limitations",
+    "limitsText": "Neural networks generalize poorly to configurations not seen in the training data. Long-term prediction remains a challenge due to the chaotic nature of the system: error grows exponentially. A hybrid approach (ML for short intervals + numerical step for correction) is the most promising direction.",
+    "simulationTitle": "Example: Figure-Eight Orbit",
+    "simulationText": "A trajectory that a neural network can learn to predict after training on Velocity-Verlet data."
   }
 }
