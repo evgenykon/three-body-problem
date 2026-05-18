@@ -268,7 +268,7 @@ const draw = () => {
   ctx.fillStyle = '#0a0a0a'
   ctx.fillRect(0, 0, width, height)
   
-  const gridSize = 50 * scale.value
+  const gridSize = 50
   ctx.strokeStyle = '#1a1a1a'
   ctx.lineWidth = 1
   
@@ -392,6 +392,17 @@ const draw = () => {
     ctx.fillStyle = body.color
     ctx.fill()
     
+    const pixelRadius = body.radius * scale.value
+    if (pixelRadius < 3) {
+      const crossSize = Math.max(4, 12 - pixelRadius)
+      ctx.strokeStyle = body.color
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(x - crossSize, y); ctx.lineTo(x + crossSize, y)
+      ctx.moveTo(x, y - crossSize); ctx.lineTo(x, y + crossSize)
+      ctx.stroke()
+    }
+
     ctx.font = '11px monospace'
     ctx.fillStyle = '#aaaaaa'
     ctx.fillText(`(${body.position.x.toFixed(0)}, ${body.position.y.toFixed(0)})`, x + body.radius * scale.value + 8, y - 8)

@@ -12,7 +12,7 @@ export interface Body {
   color: string
 }
 
-export type IntegrationMethod = 'euler' | 'rk4' | 'velocity-verlet' | 'newton'
+export type IntegrationMethod = 'euler' | 'rk4' | 'velocity-verlet' | 'newton' | 'precalculated'
 
 export interface SimulationConfig {
   gravitationalConstant: number
@@ -26,7 +26,7 @@ export interface SimulationConfig {
 export const defaultConfig: SimulationConfig = {
   gravitationalConstant: 100,
   timeStep: 0.016,
-  softening: 0.1,
+  softening: 5,
   integrationMethod: 'euler',
   trailLength: 100,
 }

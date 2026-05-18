@@ -19,6 +19,12 @@ interface Props {
   trailLength?: number
   showTrails?: boolean
   zoom?: number
+  showFrameCounter?: boolean
+  showVectors?: boolean
+  showPredictions?: boolean
+  softening?: number
+  timeStep?: number
+  stepsPerFrame?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -27,6 +33,12 @@ const props = withDefaults(defineProps<Props>(), {
   autoStart: false,
   trailLength: 100,
   showTrails: true,
+  showFrameCounter: false,
+  showVectors: true,
+  showPredictions: true,
+  softening: 5,
+  timeStep: 0.016,
+  stepsPerFrame: 1,
 })
 
 const emit = defineEmits<{
@@ -60,7 +72,7 @@ interface MergeMessage {
 const mergeMessages = ref<MergeMessage[]>([])
 
 let outOfBoundsZoomCount = 0
-const MAX_ZOOM_OUT = 10
+const MAX_ZOOM_OUT = 100
 let singleBodyCountdown: number | null = null
 let rafId: number | null = null
 let resizeObserver: ResizeObserver | null = null
@@ -81,6 +93,8 @@ const initEngine = () => {
     gravitationalConstant: props.gravitationalConstant,
     integrationMethod: props.integrationMethod,
     trailLength: props.trailLength,
+    softening: props.softening,
+    timeStep: props.timeStep,
   })
   const bodiesCopy = props.bodies.map(b => ({ ...b }))
   bodiesCopy.forEach(body => engine.value!.addBody(body))
@@ -100,12 +114,17 @@ const updateEngineConfig = () => {
       gravitationalConstant: props.gravitationalConstant,
       integrationMethod: props.integrationMethod,
       trailLength: props.trailLength,
+      softening: props.softening,
+      timeStep: props.timeStep,
     })
   }
 }
 
 watch(() => props.integrationMethod, updateEngineConfig)
 watch(() => props.gravitationalConstant, updateEngineConfig)
+watch(() => props.softening, updateEngineConfig)
+watch(() => props.timeStep, updateEngineConfig)
+watch(() => props.trailLength, updateEngineConfig)
 
 watch(() => props.autoStart, (val) => {
   if (val) start()
@@ -263,7 +282,7 @@ const predictTrajectoryWithVelocity = (
   let pos = { x: body.position.x, y: body.position.y }
   let vel = { x: vx, y: vy }
   const G = props.gravitationalConstant
-  const softening = 5
+  const softening = props.softening ?? 5
   const dt = 0.016
   const bodies = engine.value!.getBodies()
 
@@ -295,7 +314,7 @@ const draw = () => {
   ctx.fillStyle = '#0a0a0a'
   ctx.fillRect(0, 0, width, height)
 
-  const gridSize = 50 * scale.value
+  const gridSize = 50
   ctx.strokeStyle = '#1a1a1a'
   ctx.lineWidth = 1
   const offsetX = center.value.x % gridSize
@@ -385,6 +404,17 @@ const draw = () => {
     ctx.fillStyle = body.color
     ctx.fill()
 
+    const pixelRadius = body.radius * scale.value
+    if (pixelRadius < 3) {
+      const crossSize = Math.max(4, 12 - pixelRadius)
+      ctx.strokeStyle = body.color
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(x - crossSize, y); ctx.lineTo(x + crossSize, y)
+      ctx.moveTo(x, y - crossSize); ctx.lineTo(x, y + crossSize)
+      ctx.stroke()
+    }
+
     ctx.font = '11px monospace'
     ctx.fillStyle = '#aaaaaa'
     ctx.fillText(`(${body.position.x.toFixed(0)}, ${body.position.y.toFixed(0)})`, x + body.radius * scale.value + 8, y - 8)
@@ -392,37 +422,41 @@ const draw = () => {
     ctx.fillStyle = '#666666'
     ctx.fillText(`m=${body.mass}`, x + body.radius * scale.value + 8, y + 6)
 
-    const trajectory = predictTrajectory(body, 400)
-    if (trajectory.length > 1) {
-      ctx.beginPath()
-      ctx.moveTo(x, y)
-      trajectory.forEach(point => {
-        ctx.lineTo(center.value.x + point.x * scale.value, center.value.y + point.y * scale.value)
-      })
-      ctx.strokeStyle = body.color + '60'
-      ctx.lineWidth = 1
-      ctx.setLineDash([3, 6])
-      ctx.stroke()
-      ctx.setLineDash([])
+    if (props.showPredictions) {
+      const trajectory = predictTrajectory(body, 400)
+      if (trajectory.length > 1) {
+        ctx.beginPath()
+        ctx.moveTo(x, y)
+        trajectory.forEach(point => {
+          ctx.lineTo(center.value.x + point.x * scale.value, center.value.y + point.y * scale.value)
+        })
+        ctx.strokeStyle = body.color + '60'
+        ctx.lineWidth = 1
+        ctx.setLineDash([3, 6])
+        ctx.stroke()
+        ctx.setLineDash([])
+      }
     }
 
-    const vScale = 6
-    const vx = body.velocity.x * scale.value * vScale
-    const vy = body.velocity.y * scale.value * vScale
-    const vLen = Math.sqrt(vx * vx + vy * vy)
-    if (vLen > 1) {
-      const angle = Math.atan2(vy, vx)
-      const arrowX = x + vx; const arrowY = y + vy
-      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(arrowX, arrowY)
-      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(0.3, Math.min(1.2, 0.7)); ctx.stroke()
-      const arrowSize = Math.max(3, Math.min(10, scale.value * 0.05))
-      ctx.beginPath()
-      ctx.moveTo(arrowX, arrowY)
-      ctx.lineTo(arrowX - arrowSize * Math.cos(angle - Math.PI / 6), arrowY - arrowSize * Math.sin(angle - Math.PI / 6))
-      ctx.lineTo(arrowX - arrowSize * Math.cos(angle + Math.PI / 6), arrowY - arrowSize * Math.sin(angle + Math.PI / 6))
-      ctx.closePath()
-      ctx.fillStyle = '#ffffff'
-      ctx.fill()
+    if (props.showVectors) {
+      const vScale = 6
+      const vx = body.velocity.x * scale.value * vScale
+      const vy = body.velocity.y * scale.value * vScale
+      const vLen = Math.sqrt(vx * vx + vy * vy)
+      if (vLen > 1) {
+        const angle = Math.atan2(vy, vx)
+        const arrowX = x + vx; const arrowY = y + vy
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(arrowX, arrowY)
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(0.3, Math.min(1.2, 0.7)); ctx.stroke()
+        const arrowSize = Math.max(3, Math.min(10, scale.value * 0.05))
+        ctx.beginPath()
+        ctx.moveTo(arrowX, arrowY)
+        ctx.lineTo(arrowX - arrowSize * Math.cos(angle - Math.PI / 6), arrowY - arrowSize * Math.sin(angle - Math.PI / 6))
+        ctx.lineTo(arrowX - arrowSize * Math.cos(angle + Math.PI / 6), arrowY - arrowSize * Math.sin(angle + Math.PI / 6))
+        ctx.closePath()
+        ctx.fillStyle = '#ffffff'
+        ctx.fill()
+      }
     }
   })
 
@@ -459,9 +493,15 @@ const draw = () => {
   drawParticles(ctx)
 }
 
+watch(() => props.showTrails, draw)
+watch(() => props.showVectors, draw)
+watch(() => props.showPredictions, draw)
+
 const step = () => {
   if (!engine.value || !isRunning.value) return
-  engine.value.step()
+  for (let i = 0; i < props.stepsPerFrame; i++) {
+    engine.value.step()
+  }
   checkCollisions()
   frameCount.value++
 
@@ -541,7 +581,7 @@ const reset = () => {
 }
 
 const setZoom = (val: number) => {
-  scale.value = Math.max(0.05, Math.min(10, val))
+  scale.value = Math.max(0.05, Math.min(100, val))
   draw()
   emit('update:zoom', scale.value)
 }

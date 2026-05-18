@@ -347,7 +347,7 @@ const copyLog = () => {
       <div class="canvas-slot">
         <div class="canvas-wrapper">
           <div v-if="isRunning" class="frame-counter">{{ t('simulation.frame') }}: {{ frameCount }}</div>
-          <UiThreeBodySimulation
+          <ThreeBodySimulation
             ref="simRef"
             :bodies="presetBodies[selectedPreset as keyof typeof presetBodies]"
             :integration-method="integrationMethod"

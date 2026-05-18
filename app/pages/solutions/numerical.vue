@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { IntegrationMethod } from '~/simulation/Engine'
-import type { BodyConfig } from '~/components/Ui/ThreeBodySimulation.vue'
+import type { BodyConfig } from '~/components/ThreeBodySimulation.vue'
 
 const { t } = useI18n()
 
@@ -120,7 +120,7 @@ const resetSimulation = () => {
               <UiSelect v-model="integrationMethod" :options="methodOptions" />
             </div>
             <div class="canvas-container">
-              <UiThreeBodySimulation
+              <ThreeBodySimulation
                 ref="simRef"
                 :key="integrationMethod"
                 :bodies="presetBodies"

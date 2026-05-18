@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { BodyConfig } from '~/components/Ui/ThreeBodySimulation.vue'
+import type { BodyConfig } from '~/components/ThreeBodySimulation.vue'
 
 const { t } = useI18n()
 
@@ -84,7 +84,7 @@ const resetSimulation = () => {
               <UiButton variant="outline" @click="resetSimulation">{{ t('simulation.reset') }}</UiButton>
             </div>
             <div class="canvas-container">
-              <UiThreeBodySimulation
+              <ThreeBodySimulation
                 ref="simRef"
                 :bodies="presetBodies"
                 integration-method="velocity-verlet"
