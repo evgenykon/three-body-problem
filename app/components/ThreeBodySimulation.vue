@@ -489,6 +489,19 @@ const draw = () => {
     }
   }
 
+  ctx.font = '11px monospace'
+  ctx.fillStyle = '#888888'
+  const infoX = 10
+  const lines = [
+    `G = ${props.gravitationalConstant}`,
+    `zoom = ${scale.value.toFixed(2)}`,
+    `method = ${props.integrationMethod}`,
+    `soft = ${props.softening}`,
+    `dt = ${props.timeStep}`,
+    `stepsPerFrame = ${props.stepsPerFrame}`,
+  ]
+  lines.forEach((line, i) => ctx.fillText(line, infoX, 16 + i * 16))
+
   updateParticles()
   drawParticles(ctx)
 }

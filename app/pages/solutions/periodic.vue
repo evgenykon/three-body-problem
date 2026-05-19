@@ -75,29 +75,10 @@ const presets: Record<string, PresetDef> = {
     G: 80, softening: 5, zoom: 121, dt: 0.016, steps: 1, trailLength: 30,
   },
 }
-
-const suvakovOrbits: { key: string; label: string; vx: number; vy: number }[] = [
-  { key: 'butterfly1', label: 'Butterfly I', vx: 0.3068931165215643, vy: 0.1255073111049974 },
-  { key: 'bumblebee', label: 'Bumblebee', vx: 0.1842797144883446, vy: 0.5871881881471850 },
-  { key: 'moth1', label: 'Moth I', vx: 0.4644445831998595, vy: 0.3960593457193352 },
-  { key: 'moth2', label: 'Moth II', vx: 0.4391660601951351, vy: 0.4529683935293414 },
-  { key: 'moth3', label: 'Moth III', vx: 0.3834443105742295, vy: 0.3773634125867375 },
-  { key: 'goggles', label: 'Goggles', vx: 0.0833004423471026, vy: 0.1278891515286576 },
-  { key: 'dragonfly', label: 'Dragonfly', vx: 0.0805820464670267, vy: 0.5888424036665796 },
-  { key: 'yarn', label: 'Yarn', vx: 0.5590243431608447, vy: 0.3491923297151036 },
-  { key: 'yinyang1', label: 'Yin-Yang I', vx: 0.5139380236053351, vy: 0.3047365319853317 },
-]
-suvakovOrbits.forEach(o => {
-  presets[o.key] = { bodies: makeSuvakovBody(o.vx, o.vy),
-    G: 80, softening: 5, dt: 0.016, zoom: 121, steps: 1, trailLength: 30, mass: 200, radius: 0.05,
-  }
-})
-
 const presetOptions = [
   { value: 'figure8', label: t('periodic.figure8Title') },
   { value: 'lagrange', label: t('periodic.lagrangeTitle') },
   { value: 'euler', label: 'Эйлер коллинеарный' },
-  ...suvakovOrbits.map(o => ({ value: o.key, label: o.label })),
 ]
 
 const currentPreset = ref('figure8')

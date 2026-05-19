@@ -184,7 +184,11 @@ const resetSimulation = () => {
                 :bodies="presetBodies"
                 :integration-method="integrationMethod"
                 :gravitational-constant="1"
+                :softening="0.1"
                 :auto-start="false"
+                :show-predictions="false"
+                :show-trails="true"
+                :show-vectors="false"
               />
             </div>
           </UiCardContent>

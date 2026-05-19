@@ -89,6 +89,7 @@ const resetSimulation = () => {
                 :bodies="presetBodies"
                 integration-method="velocity-verlet"
                 :gravitational-constant="1"
+                :softening="0.1"
                 :auto-start="false"
               />
             </div>
