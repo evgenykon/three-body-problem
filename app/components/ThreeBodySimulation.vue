@@ -508,6 +508,9 @@ const draw = () => {
     `dt = ${props.timeStep}`,
     `stepsPerFrame = ${props.stepsPerFrame}`,
   ]
+  if (props.showFrameCounter) {
+    lines.push(`frame = ${frameCount.value}`)
+  }
   lines.forEach((line, i) => ctx.fillText(line, infoX, 16 + i * 16))
 
   updateParticles()

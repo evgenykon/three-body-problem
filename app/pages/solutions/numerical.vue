@@ -28,10 +28,11 @@ const methodOptions = [
   { value: 'velocity-verlet', label: t('simulation.methodVelocityVerlet') },
 ]
 
+const v = Math.sqrt(5120 * 200 / (80 * Math.sqrt(3)))
 const presetBodies: BodyConfig[] = [
-  { id: 'body1', position: { x: 80, y: 0 }, velocity: { x: 0, y: 86 }, mass: 200, radius: 14, color: '#ff6b6b' },
-  { id: 'body2', position: { x: -40, y: 69.28 }, velocity: { x: -74.48, y: -43 }, mass: 200, radius: 14, color: '#4ecdc4' },
-  { id: 'body3', position: { x: -40, y: -69.28 }, velocity: { x: 74.48, y: -43 }, mass: 200, radius: 14, color: '#45b7d1' },
+  { id: 'body1', position: { x: 80, y: 0 }, velocity: { x: 0, y: v }, mass: 200, radius: 14, color: '#ff6b6b' },
+  { id: 'body2', position: { x: -40, y: 40 * Math.sqrt(3) }, velocity: { x: -v * Math.sqrt(3) / 2, y: -v / 2 }, mass: 200, radius: 14, color: '#4ecdc4' },
+  { id: 'body3', position: { x: -40, y: -40 * Math.sqrt(3) }, velocity: { x: v * Math.sqrt(3) / 2, y: -v / 2 }, mass: 200, radius: 14, color: '#45b7d1' },
 ]
 
 const toggleSimulation = () => {
@@ -111,7 +112,6 @@ const resetSimulation = () => {
           </UiCardContent>
         </UiCard>
       </section>
-
       <section class="content-section simulation-section">
         <UiHeader :level="2" class="section-title">{{ t('numerical.simulationTitle') }}</UiHeader>
         <UiCard>
@@ -131,13 +131,40 @@ const resetSimulation = () => {
                 :bodies="presetBodies"
                 :integration-method="integrationMethod"
                 :gravitational-constant="5120"
+                :softening="0.01"
+                :time-step="0.001"
+                :steps-per-frame="16"
                 v-model:zoom="zoom"
                 :auto-start="false"
                 :show-predictions="false"
                 :show-trails="true"
                 :show-vectors="false"
+                :show-frame-counter="true"
               />
             </div>
+          </UiCardContent>
+        </UiCard>
+      </section>
+
+      <section class="content-section">
+        <UiCard>
+          <UiCardContent>
+            <p class="params-text">
+              Нужно сказать пару слов про наш симулятор и проблематику отрисовки орбит: тут мы ищем компромисс между точностью и производительностью. За точность отвечают:
+            </p>
+            <ul class="params-list">
+              <li><code>dt</code> — чем меньше, тем точнее</li>
+              <li>метод интегрирования — Velocity-Verlet дает лучшее сохранение энергии, RK4 — баланс, Euler — самый грубый</li>
+              <li><code>soft</code> — чем меньше, тем точнее гравитация на близких расстояниях</li>
+            </ul>
+            <p class="params-text">За производительность — <code>stepsPerFrame</code> (сколько шагов <code>dt</code> делается за один кадр) и сам <code>dt</code>: чем меньше шаг или чем больше шагов, тем выше нагрузка на процессор.
+            </p>
+            <p class="params-text">
+              Ну и остаются <code>G</code> — задаёт силу гравитации, <code>zoom</code> — визуальный масштаб.
+            </p>
+            <p class="params-text">
+              Таким образом, описываемые методы интегрирования на используемых в симуляторе настройках точности дают стабильность орбит примерно для 3000 кадров. Если увеличивать точность — можно получить зависание страницы (или, возможно, вы уже с ним столкнулись).
+            </p>
           </UiCardContent>
         </UiCard>
       </section>
@@ -161,4 +188,8 @@ const resetSimulation = () => {
 .canvas-container { width: 100%; aspect-ratio: 1; max-height: 500px; border-radius: 8px; overflow: hidden; }
 .content-section p { margin: 0; line-height: 1.7; color: var(--muted-foreground); font-size: 14px; }
 .content-section p + p { margin-top: 8px; }
+.params-text { font-size: 13px; line-height: 1.8; color: var(--muted-foreground); margin: 0; }
+.params-text code { font-size: 12px; padding: 1px 5px; background: var(--accent); border-radius: 3px; }
+.params-list { margin: 4px 0 8px; padding-left: 20px; font-size: 13px; line-height: 1.8; color: var(--muted-foreground); }
+.params-list code { font-size: 12px; padding: 1px 5px; background: var(--accent); border-radius: 3px; }
 </style>
