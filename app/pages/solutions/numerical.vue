@@ -139,7 +139,7 @@ const resetSimulation = () => {
                 :show-predictions="false"
                 :show-trails="true"
                 :show-vectors="false"
-                :show-frame-counter="true"
+                :show-config="true"
               />
             </div>
           </UiCardContent>

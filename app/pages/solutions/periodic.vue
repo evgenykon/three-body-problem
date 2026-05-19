@@ -23,13 +23,6 @@ const showTrails = ref(true)
 const showVectors = ref(true)
 const showPredictions = ref(true)
 
-const methodOptions = [
-  { value: 'precalculated', label: t('simulation.methodPrecalculated') },
-  { value: 'euler', label: t('simulation.methodEuler') },
-  { value: 'rk4', label: t('simulation.methodRK4') },
-  { value: 'velocity-verlet', label: t('simulation.methodVelocityVerlet') },
-]
-
 interface PresetDef {
   bodies: BodyConfig[]
   G: number
@@ -97,11 +90,6 @@ const loadPreset = (name: string) => {
   zoom.value = p.zoom
   presetKey.value++
 }
-
-watch(integrationMethod, () => {
-  isRunning.value = false
-  presetKey.value++
-})
 
 watch(currentPreset, (name) => {
   loadPreset(name)
@@ -240,7 +228,6 @@ const resetSimulation = () => {
               </UiButton>
               <UiButton variant="outline" @click="resetSimulation">{{ t('simulation.reset') }}</UiButton>
               <UiSelect v-model="currentPreset" :options="presetOptions" />
-              <UiSelect v-model="integrationMethod" :options="methodOptions" />
             </div>
             <div class="canvas-container">
               <ThreeBodySimulation
@@ -251,14 +238,10 @@ const resetSimulation = () => {
                 :gravitational-constant="gravitationalConstant"
                 :zoom="zoom"
                 :auto-start="false"
-                :show-frame-counter="true"
-                :softening="softening"
-                :time-step="timeStep"
-                :steps-per-frame="stepsPerFrame"
-                :trail-length="trailLength"
-                :show-trails="showTrails"
-                :show-vectors="showVectors"
-                :show-predictions="showPredictions"
+                :trail-length="100"
+                :show-trails="true"
+                :show-vectors="false"
+                :show-predictions="false"
               />
             </div>
           </UiCardContent>

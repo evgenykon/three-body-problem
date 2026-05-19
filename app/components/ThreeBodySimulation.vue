@@ -19,7 +19,7 @@ interface Props {
   trailLength?: number
   showTrails?: boolean
   zoom?: number
-  showFrameCounter?: boolean
+  showConfig?: boolean
   showVectors?: boolean
   showPredictions?: boolean
   softening?: number
@@ -33,7 +33,7 @@ const props = withDefaults(defineProps<Props>(), {
   autoStart: false,
   trailLength: 100,
   showTrails: true,
-  showFrameCounter: false,
+  showConfig: false,
   showVectors: true,
   showPredictions: true,
   softening: 5,
@@ -497,21 +497,21 @@ const draw = () => {
     }
   }
 
-  ctx.font = '11px monospace'
-  ctx.fillStyle = '#888888'
-  const infoX = 10
-  const lines = [
-    `G = ${props.gravitationalConstant}`,
-    `zoom = ${scale.value.toFixed(2)}`,
-    `method = ${props.integrationMethod}`,
-    `soft = ${props.softening}`,
-    `dt = ${props.timeStep}`,
-    `stepsPerFrame = ${props.stepsPerFrame}`,
-  ]
-  if (props.showFrameCounter) {
-    lines.push(`frame = ${frameCount.value}`)
+  if (props.showConfig) {
+    ctx.font = '11px monospace'
+    ctx.fillStyle = '#888888'
+    const infoX = 10
+    const lines = [
+      `G = ${props.gravitationalConstant}`,
+      `zoom = ${scale.value.toFixed(2)}`,
+      `method = ${props.integrationMethod}`,
+      `soft = ${props.softening}`,
+      `dt = ${props.timeStep}`,
+      `stepsPerFrame = ${props.stepsPerFrame}`,
+      `frame = ${frameCount.value}`,
+    ]
+    lines.forEach((line, i) => ctx.fillText(line, infoX, 16 + i * 16))
   }
-  lines.forEach((line, i) => ctx.fillText(line, infoX, 16 + i * 16))
 
   updateParticles()
   drawParticles(ctx)
