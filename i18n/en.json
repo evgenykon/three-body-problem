@@ -201,7 +201,19 @@
     "comparisonTitle": "Comparison",
     "comparisonText": "Euler's method accumulates error quickly and does not conserve energy. RK4 is accurate over short intervals but does not systematically conserve energy. Velocity-Verlet is the best choice for gravitational problems: it is symplectic (conserves phase space volume) and provides good energy conservation over long times.",
     "simulationTitle": "Simulation",
-    "simulationText": "Switch the integration method and observe how well the orbit is preserved."
+    "simulationText": "Switch the integration method and observe how well the orbit is preserved.",
+    "paramsIntro": "A few words about our simulator and the challenge of orbit rendering: we are balancing accuracy and performance. Accuracy is determined by:",
+    "paramsDt": "— the smaller, the more accurate",
+    "paramsMethod": "integration method — Velocity-Verlet gives the best energy conservation, RK4 is a balance, Euler is the crudest",
+    "paramsSoft": "— the smaller, the more accurate gravity at close distances",
+    "paramsPerformanceBefore": "Performance is affected by ",
+    "paramsPerformanceStep": "(how many ",
+    "paramsPerformanceAfter": " steps per frame) and ",
+    "paramsPerformanceEnd": " itself: the smaller the step or the more steps, the higher the CPU load.",
+    "paramsGAndZoom": "And finally ",
+    "paramsG": " — gravitational constant, ",
+    "paramsZoom": " — visual scale.",
+    "paramsConclusion": "Thus, the described integration methods at the accuracy settings used in the simulator provide orbit stability for approximately 3000 frames. Increasing accuracy further may cause the page to freeze (or perhaps you have already encountered this)."
   },
   "periodic": {
     "title": "Periodic Orbits",

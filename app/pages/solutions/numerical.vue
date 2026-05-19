@@ -149,22 +149,15 @@ const resetSimulation = () => {
       <section class="content-section">
         <UiCard>
           <UiCardContent>
-            <p class="params-text">
-              Нужно сказать пару слов про наш симулятор и проблематику отрисовки орбит: тут мы ищем компромисс между точностью и производительностью. За точность отвечают:
-            </p>
+            <p class="params-text">{{ t('numerical.paramsIntro') }}</p>
             <ul class="params-list">
-              <li><code>dt</code> — чем меньше, тем точнее</li>
-              <li>метод интегрирования — Velocity-Verlet дает лучшее сохранение энергии, RK4 — баланс, Euler — самый грубый</li>
-              <li><code>soft</code> — чем меньше, тем точнее гравитация на близких расстояниях</li>
+              <li><code>dt</code> {{ t('numerical.paramsDt') }}</li>
+              <li>{{ t('numerical.paramsMethod') }}</li>
+              <li><code>soft</code> {{ t('numerical.paramsSoft') }}</li>
             </ul>
-            <p class="params-text">За производительность — <code>stepsPerFrame</code> (сколько шагов <code>dt</code> делается за один кадр) и сам <code>dt</code>: чем меньше шаг или чем больше шагов, тем выше нагрузка на процессор.
-            </p>
-            <p class="params-text">
-              Ну и остаются <code>G</code> — задаёт силу гравитации, <code>zoom</code> — визуальный масштаб.
-            </p>
-            <p class="params-text">
-              Таким образом, описываемые методы интегрирования на используемых в симуляторе настройках точности дают стабильность орбит примерно для 3000 кадров. Если увеличивать точность — можно получить зависание страницы (или, возможно, вы уже с ним столкнулись).
-            </p>
+            <p class="params-text">{{ t('numerical.paramsPerformanceBefore') }}<code>stepsPerFrame</code>{{ t('numerical.paramsPerformanceStep') }}<code>dt</code>{{ t('numerical.paramsPerformanceAfter') }}<code>dt</code>{{ t('numerical.paramsPerformanceEnd') }}</p>
+            <p class="params-text">{{ t('numerical.paramsGAndZoom') }}<code>G</code>{{ t('numerical.paramsG') }}<code>zoom</code>{{ t('numerical.paramsZoom') }}</p>
+            <p class="params-text">{{ t('numerical.paramsConclusion') }}</p>
           </UiCardContent>
         </UiCard>
       </section>

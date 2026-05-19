@@ -241,32 +241,6 @@ const resetSimulation = () => {
               <UiButton variant="outline" @click="resetSimulation">{{ t('simulation.reset') }}</UiButton>
               <UiSelect v-model="currentPreset" :options="presetOptions" />
               <UiSelect v-model="integrationMethod" :options="methodOptions" />
-              <span class="input-group">
-                <span class="text-sm">soft</span>
-                <input v-model.number="softening" class="input-field w-16" type="number" step="0.1" />
-              </span>
-              <span class="input-group">
-                <span class="text-sm">dt</span>
-                <input v-model.number="timeStep" class="input-field w-20" type="number" step="0.0001" />
-              </span>
-              <span class="input-group">
-                <span class="text-sm">steps</span>
-                <input v-model.number="stepsPerFrame" class="input-field w-16" type="number" step="1" min="1" />
-              </span>
-              <span class="input-group">
-                <span class="text-sm">trail</span>
-                <input v-model.number="trailLength" class="input-field w-20" type="number" step="100" min="10" />
-              </span>
-            </div>
-            <div class="zoom-controls">
-              <UiButton variant="outline" @click="simRef?.zoom(0.5)">Zoom+</UiButton>
-              <UiButton variant="outline" @click="simRef?.zoom(-0.5)">Zoom-</UiButton>
-              <input :value="simRef?.scale?.toFixed(2)" class="input-field w-16" readonly />
-            </div>
-            <div class="checkbox-controls">
-              <UiCheckbox v-model="showVectors" label="Vectors" />
-              <UiCheckbox v-model="showPredictions" label="Prediction" />
-              <UiCheckbox v-model="showTrails" label="Trails" />
             </div>
             <div class="canvas-container">
               <ThreeBodySimulation
@@ -306,13 +280,9 @@ const resetSimulation = () => {
 .lead-text { font-size: 15px; line-height: 1.7; color: var(--muted-foreground); margin: 0; }
 .simulation-section { margin-top: 32px; }
 .sim-controls { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-.checkbox-controls { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; }
 .canvas-container { width: 100%; aspect-ratio: 1; max-height: 500px; border-radius: 8px; overflow: hidden; }
 .content-section p { margin: 0; line-height: 1.7; color: var(--muted-foreground); font-size: 14px; }
 .content-section p + p { margin-top: 8px; }
 .content-section ul { margin: 8px 0 0; padding-left: 20px; line-height: 1.7; color: var(--muted-foreground); font-size: 14px; }
 .content-section li { margin-bottom: 4px; }
-.w-16 { width: 4rem; }
-.input-group { display: inline-flex; align-items: center; gap: 4px; }
-.zoom-controls { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
 </style>
