@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { IntegrationMethod } from '~/simulation/Engine'
 import type { BodyConfig } from '~/components/ThreeBodySimulation.vue'
 
@@ -13,6 +13,10 @@ const simRef = ref<any>(null)
 const isRunning = ref(false)
 const integrationMethod = ref<IntegrationMethod>('velocity-verlet')
 const zoom = ref(1.8)
+
+watch(integrationMethod, () => {
+  zoom.value = 1.8
+})
 
 const eulerEquation = '\\mathbf{v}(t+\\Delta t) = \\mathbf{v}(t) + \\mathbf{a}(t)\\Delta t, \\quad \\mathbf{r}(t+\\Delta t) = \\mathbf{r}(t) + \\mathbf{v}(t)\\Delta t'
 const rk4Equation = '\\mathbf{r}(t+\\Delta t) = \\mathbf{r}(t) + \\frac{\\Delta t}{6}(\\mathbf{k}_1 + 2\\mathbf{k}_2 + 2\\mathbf{k}_3 + \\mathbf{k}_4)'
@@ -45,6 +49,7 @@ const resetSimulation = () => {
   if (simRef.value) {
     simRef.value.reset()
     isRunning.value = false
+    zoom.value = 1.8
   }
 }
 </script>
@@ -128,6 +133,9 @@ const resetSimulation = () => {
                 :gravitational-constant="5120"
                 v-model:zoom="zoom"
                 :auto-start="false"
+                :show-predictions="false"
+                :show-trails="true"
+                :show-vectors="false"
               />
             </div>
           </UiCardContent>

@@ -88,6 +88,15 @@ const pickingVectorTarget = ref<{ x: number; y: number } | null>(null)
 let pickingVectorClickCallback: ((vx: number, vy: number) => void) | null = null
 let pickingVectorMoveCallback: ((vx: number, vy: number) => void) | null = null
 
+const deepCopyBody = (b: BodyConfig): Body => ({
+  id: b.id,
+  position: { x: b.position.x, y: b.position.y },
+  velocity: { x: b.velocity.x, y: b.velocity.y },
+  mass: b.mass,
+  radius: b.radius,
+  color: b.color,
+})
+
 const initEngine = () => {
   engine.value = new Engine2D({
     gravitationalConstant: props.gravitationalConstant,
@@ -96,10 +105,9 @@ const initEngine = () => {
     softening: props.softening,
     timeStep: props.timeStep,
   })
-  const bodiesCopy = props.bodies.map(b => ({ ...b }))
-  bodiesCopy.forEach(body => engine.value!.addBody(body))
-  engine.value.setDefaultBodies(props.bodies.map(b => ({ ...b })))
-  engine.value.setInitialBodies(props.bodies.map(b => ({ ...b })))
+  props.bodies.forEach(b => engine.value!.addBody(deepCopyBody(b)))
+  engine.value.setDefaultBodies(props.bodies.map(deepCopyBody))
+  engine.value.setInitialBodies(props.bodies.map(deepCopyBody))
 }
 
 const updateInitialBodies = () => {
@@ -763,9 +771,9 @@ defineExpose({
   setBodies: (bodies: BodyConfig[]) => {
     if (!engine.value) return
     engine.value.getBodies().forEach(b => engine.value!.removeBody(b.id))
-    bodies.forEach(b => engine.value!.addBody({ ...b }))
-    engine.value.setDefaultBodies(bodies.map(b => ({ ...b })))
-    engine.value.setInitialBodies(bodies.map(b => ({ ...b })))
+    bodies.forEach(b => engine.value!.addBody(deepCopyBody(b)))
+    engine.value.setDefaultBodies(bodies.map(deepCopyBody))
+    engine.value.setInitialBodies(bodies.map(deepCopyBody))
     draw()
   },
 })
