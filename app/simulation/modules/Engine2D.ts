@@ -7,9 +7,25 @@ export class Engine2D {
   private trails: Map<string, Vector2D[]> = new Map()
   private initialBodies: Body[] = []
   private defaultBodies: Body[] = []
+  private precalculatedFrames: Map<string, Vector2D[]> = new Map()
+  private precalculatedFrameIndex = 0
+  private precalculatedNumFrames = 0
 
   constructor(config: Partial<SimulationConfig> = {}) {
     this.config = { ...defaultConfig, ...config }
+  }
+
+  setPrecalculatedFrames(frames: Map<string, Vector2D[]>): void {
+    this.precalculatedFrames = frames
+    this.precalculatedFrameIndex = 0
+    this.precalculatedNumFrames = 0
+    frames.forEach(f => {
+      if (f.length > this.precalculatedNumFrames) this.precalculatedNumFrames = f.length
+    })
+  }
+
+  isPrecalculated(): boolean {
+    return this.config.integrationMethod === 'precalculated' && this.precalculatedNumFrames > 0
   }
 
   addBody(body: Body): void {
@@ -68,6 +84,7 @@ export class Engine2D {
         this.stepVelocityVerlet()
         break
       case 'precalculated':
+        this.stepPrecalculated()
         break
       case 'newton':
       case 'euler':
@@ -174,6 +191,19 @@ export class Engine2D {
     })
   }
 
+  private stepPrecalculated(): void {
+    if (this.precalculatedNumFrames === 0) return
+    this.precalculatedFrames.forEach((frames, id) => {
+      const body = this.bodies.find(b => b.id === id)
+      if (!body || frames.length === 0) return
+      const frame = frames[this.precalculatedFrameIndex % frames.length]
+      if (!frame) return
+      body.position.x = frame.x
+      body.position.y = frame.y
+    })
+    this.precalculatedFrameIndex = (this.precalculatedFrameIndex + 1) % this.precalculatedNumFrames
+  }
+
   private stepVelocityVerlet(): void {
     const dt = this.config.timeStep
     const dt2 = dt * dt
@@ -240,6 +270,7 @@ export class Engine2D {
   }
 
   reset(): void {
+    this.precalculatedFrameIndex = 0
     const bodiesToRestore = this.initialBodies.length > 0 ? this.initialBodies : this.defaultBodies
     if (bodiesToRestore.length > 0) {
       this.bodies = bodiesToRestore.map(b => ({

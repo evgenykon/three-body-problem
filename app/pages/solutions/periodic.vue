@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { IntegrationMethod } from '~/simulation/Engine'
-import type { BodyConfig } from '~/components/ThreeBodySimulation.vue'
+import type { BodyConfig, PrecalculatedFrames } from '~/components/ThreeBodySimulation.vue'
+import { fig8, lagrange } from '~/data/precalculated'
 
 const { t } = useI18n()
 
@@ -13,69 +14,47 @@ const simRef = ref<any>(null)
 const isRunning = ref(false)
 const integrationMethod = ref<IntegrationMethod>('precalculated')
 const gravitationalConstant = ref(1)
-const softening = ref(0)
-const timeStep = ref(0.016)
-const stepsPerFrame = ref(1)
-const trailLength = ref(100)
 const presetKey = ref(0)
 const zoom = ref<number | undefined>(undefined)
-const showTrails = ref(true)
-const showVectors = ref(true)
-const showPredictions = ref(true)
 
 interface PresetDef {
   bodies: BodyConfig[]
   G: number
   zoom?: number
-  softening: number
-  dt: number
-  steps: number
-  trailLength: number
+  frames: PrecalculatedFrames
 }
 
-function makeSuvakovBody(vx: number, vy: number): BodyConfig[] {
-  const r = 0.05
-  return [
-    { id: 'body1', position: { x: -1, y: 0 }, velocity: { x: vx, y: vy }, mass: 1, radius: r, color: '#ff6b6b' },
-    { id: 'body2', position: { x: 1, y: 0 }, velocity: { x: vx, y: vy }, mass: 1, radius: r, color: '#4ecdc4' },
-    { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -2 * vx, y: -2 * vy }, mass: 1, radius: r, color: '#45b7d1' },
-  ]
-}
+const v = Math.sqrt(5120 * 200 / (80 * Math.sqrt(3)))
 
 const presets: Record<string, PresetDef> = {
   figure8: {
     bodies: [
-      { id: 'body1', position: { x: 0.97000436, y: -0.24308753 }, velocity: { x: 0.466203685, y: 0.43236573 }, mass: 1, radius: 0.05, color: '#ff6b6b' },
-      { id: 'body2', position: { x: -0.97000436, y: 0.24308753 }, velocity: { x: 0.466203685, y: 0.43236573 }, mass: 1, radius: 0.05, color: '#4ecdc4' },
-      { id: 'body3', position: { x: 0, y: 0 }, velocity: { x: -0.93240737, y: -0.86473146 }, mass: 1, radius: 0.05, color: '#45b7d1' },
+      { id: 'b1', position: { x: 9.700044, y: -2.430875 }, velocity: { x: 4.662037, y: 4.323657 }, mass: 1, radius: 0.5, color: '#ff6b6b' },
+      { id: 'b2', position: { x: -9.700044, y: 2.430875 }, velocity: { x: 4.662037, y: 4.323657 }, mass: 1, radius: 0.5, color: '#4ecdc4' },
+      { id: 'b3', position: { x: 0, y: 0 }, velocity: { x: -9.324074, y: -8.647315 }, mass: 1, radius: 0.5, color: '#45b7d1' },
     ],
-    G: 80, softening: 5, zoom: 121, dt: 0.0001, steps: 1, trailLength: 30,
+    G: 1000,
+    zoom: 12,
+    frames: fig8.frames,
   },
   lagrange: {
     bodies: [
-      { id: 'body1', position: { x: 80, y: 0 }, velocity: { x: 0, y: 10.75 }, mass: 200, radius: 14, color: '#ff6b6b' },
-      { id: 'body2', position: { x: -40, y: 69.28 }, velocity: { x: -9.31, y: -5.37 }, mass: 200, radius: 14, color: '#4ecdc4' },
-      { id: 'body3', position: { x: -40, y: -69.28 }, velocity: { x: 9.31, y: -5.37 }, mass: 200, radius: 14, color: '#45b7d1' },
+      { id: 'b1', position: { x: 80, y: 0 }, velocity: { x: 0, y: v }, mass: 200, radius: 14, color: '#ff6b6b' },
+      { id: 'b2', position: { x: -40, y: 40 * Math.sqrt(3) }, velocity: { x: -v * Math.sqrt(3) / 2, y: -v / 2 }, mass: 200, radius: 14, color: '#4ecdc4' },
+      { id: 'b3', position: { x: -40, y: -40 * Math.sqrt(3) }, velocity: { x: v * Math.sqrt(3) / 2, y: -v / 2 }, mass: 200, radius: 14, color: '#45b7d1' },
     ],
-    G: 80, softening: 5, zoom: 121, dt: 0.016, steps: 1, trailLength: 30,
-  },
-  euler: {
-    bodies: [
-      { id: 'body1', position: { x: -40, y: 0 }, velocity: { x: 0, y: 22.36 }, mass: 200, radius: 10, color: '#ff6b6b' },
-      { id: 'body2', position: { x: 0, y: 0 }, velocity: { x: 0, y: 0 }, mass: 200, radius: 10, color: '#4ecdc4' },
-      { id: 'body3', position: { x: 40, y: 0 }, velocity: { x: 0, y: -22.36 }, mass: 200, radius: 10, color: '#45b7d1' },
-    ],
-    G: 80, softening: 5, zoom: 121, dt: 0.016, steps: 1, trailLength: 30,
+    G: 5120,
+    frames: lagrange.frames,
   },
 }
 const presetOptions = [
   { value: 'figure8', label: t('periodic.figure8Title') },
   { value: 'lagrange', label: t('periodic.lagrangeTitle') },
-  { value: 'euler', label: 'Эйлер коллинеарный' },
 ]
 
 const currentPreset = ref('figure8')
-const presetBodies = ref<BodyConfig[]>([...presets.figure8.bodies])
+const presetBodies = ref<BodyConfig[]>([...presets.figure8!.bodies])
+const precalculatedFrames = ref<PrecalculatedFrames>(presets.figure8!.frames)
 
 const loadPreset = (name: string) => {
   const p = presets[name]
@@ -83,11 +62,8 @@ const loadPreset = (name: string) => {
   isRunning.value = false
   presetBodies.value = [...p.bodies]
   gravitationalConstant.value = p.G
-  softening.value = p.softening
-  timeStep.value = p.dt
-  stepsPerFrame.value = p.steps
-  trailLength.value = p.trailLength
   zoom.value = p.zoom
+  precalculatedFrames.value = p.frames
   presetKey.value++
 }
 
@@ -238,10 +214,10 @@ const resetSimulation = () => {
                 :gravitational-constant="gravitationalConstant"
                 :zoom="zoom"
                 :auto-start="false"
-                :trail-length="100"
                 :show-trails="true"
                 :show-vectors="false"
                 :show-predictions="false"
+                :precalculated-frames="precalculatedFrames"
               />
             </div>
           </UiCardContent>

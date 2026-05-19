@@ -11,6 +11,8 @@ export interface BodyConfig {
   color: string
 }
 
+export type PrecalculatedFrames = Map<string, { x: number; y: number }[]>
+
 interface Props {
   bodies: BodyConfig[]
   integrationMethod?: IntegrationMethod
@@ -25,6 +27,7 @@ interface Props {
   softening?: number
   timeStep?: number
   stepsPerFrame?: number
+  precalculatedFrames?: PrecalculatedFrames
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -108,6 +111,9 @@ const initEngine = () => {
   props.bodies.forEach(b => engine.value!.addBody(deepCopyBody(b)))
   engine.value.setDefaultBodies(props.bodies.map(deepCopyBody))
   engine.value.setInitialBodies(props.bodies.map(deepCopyBody))
+  if (props.precalculatedFrames) {
+    engine.value.setPrecalculatedFrames(props.precalculatedFrames)
+  }
 }
 
 const updateInitialBodies = () => {
@@ -133,6 +139,12 @@ watch(() => props.gravitationalConstant, updateEngineConfig)
 watch(() => props.softening, updateEngineConfig)
 watch(() => props.timeStep, updateEngineConfig)
 watch(() => props.trailLength, updateEngineConfig)
+
+watch(() => props.precalculatedFrames, (frames) => {
+  if (engine.value && frames) {
+    engine.value.setPrecalculatedFrames(frames)
+  }
+}, { deep: true, immediate: true })
 
 watch(() => props.autoStart, (val) => {
   if (val) start()
@@ -426,11 +438,13 @@ const draw = () => {
     ctx.font = '11px monospace'
     ctx.fillStyle = '#aaaaaa'
     ctx.fillText(`(${body.position.x.toFixed(0)}, ${body.position.y.toFixed(0)})`, x + body.radius * scale.value + 8, y - 8)
-    ctx.font = '10px monospace'
-    ctx.fillStyle = '#666666'
-    ctx.fillText(`m=${body.mass}`, x + body.radius * scale.value + 8, y + 6)
+    if (props.integrationMethod !== 'precalculated') {
+      ctx.font = '10px monospace'
+      ctx.fillStyle = '#666666'
+      ctx.fillText(`m=${body.mass}`, x + body.radius * scale.value + 8, y + 6)
+    }
 
-    if (props.showPredictions) {
+    if (props.showPredictions && props.integrationMethod !== 'precalculated') {
       const trajectory = predictTrajectory(body, 400)
       if (trajectory.length > 1) {
         ctx.beginPath()
@@ -446,7 +460,7 @@ const draw = () => {
       }
     }
 
-    if (props.showVectors) {
+    if (props.showVectors && props.integrationMethod !== 'precalculated') {
       const vScale = 6
       const vx = body.velocity.x * scale.value * vScale
       const vy = body.velocity.y * scale.value * vScale
