@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import type { IntegrationMethod } from '~/simulation/Engine'
 import type { BodyConfig, PrecalculatedFrames } from '~/components/ThreeBodySimulation.vue'
-import { fig8, lagrange } from '~/data/precalculated'
+import { fig8, lagrange, hierarchical, lyapunov } from '~/data/precalculated'
 
 const { t } = useI18n()
 
@@ -24,8 +24,6 @@ interface PresetDef {
   frames: PrecalculatedFrames
 }
 
-const v = Math.sqrt(5120 * 200 / (80 * Math.sqrt(3)))
-
 const presets: Record<string, PresetDef> = {
   figure8: {
     bodies: [
@@ -33,23 +31,39 @@ const presets: Record<string, PresetDef> = {
       { id: 'b2', position: { x: -9.700044, y: 2.430875 }, velocity: { x: 4.662037, y: 4.323657 }, mass: 1, radius: 0.5, color: '#4ecdc4' },
       { id: 'b3', position: { x: 0, y: 0 }, velocity: { x: -9.324074, y: -8.647315 }, mass: 1, radius: 0.5, color: '#45b7d1' },
     ],
-    G: 1000,
-    zoom: 12,
-    frames: fig8.frames,
+    G: 1000, zoom: 12, frames: fig8.frames,
   },
   lagrange: {
     bodies: [
-      { id: 'b1', position: { x: 80, y: 0 }, velocity: { x: 0, y: v }, mass: 200, radius: 14, color: '#ff6b6b' },
-      { id: 'b2', position: { x: -40, y: 40 * Math.sqrt(3) }, velocity: { x: -v * Math.sqrt(3) / 2, y: -v / 2 }, mass: 200, radius: 14, color: '#4ecdc4' },
-      { id: 'b3', position: { x: -40, y: -40 * Math.sqrt(3) }, velocity: { x: v * Math.sqrt(3) / 2, y: -v / 2 }, mass: 200, radius: 14, color: '#45b7d1' },
+      { id: 'b1', position: { x: 80, y: 0 }, velocity: { x: 0, y: Math.sqrt(5120 * 200 / (80 * Math.sqrt(3))) }, mass: 200, radius: 14, color: '#ff6b6b' },
+      { id: 'b2', position: { x: -40, y: 40 * Math.sqrt(3) }, velocity: { x: -Math.sqrt(5120 * 200 / (80 * Math.sqrt(3))) * Math.sqrt(3) / 2, y: -Math.sqrt(5120 * 200 / (80 * Math.sqrt(3))) / 2 }, mass: 200, radius: 14, color: '#4ecdc4' },
+      { id: 'b3', position: { x: -40, y: -40 * Math.sqrt(3) }, velocity: { x: Math.sqrt(5120 * 200 / (80 * Math.sqrt(3))) * Math.sqrt(3) / 2, y: -Math.sqrt(5120 * 200 / (80 * Math.sqrt(3))) / 2 }, mass: 200, radius: 14, color: '#45b7d1' },
     ],
-    G: 5120,
-    frames: lagrange.frames,
+    G: 5120, frames: lagrange.frames,
+  },
+
+  hierarchical: {
+    bodies: [
+      { id: 'b1', position: { x: 0, y: 0 }, velocity: { x: 0, y: 0 }, mass: 5000, radius: 30, color: '#ffe66d' },
+      { id: 'b2', position: { x: 100, y: 0 }, velocity: { x: 0, y: Math.sqrt(5120 * 5000 / 100) }, mass: 10, radius: 8, color: '#4ecdc4' },
+      { id: 'b3', position: { x: 105, y: 0 }, velocity: { x: 0, y: Math.sqrt(5120 * 5000 / 100) + Math.sqrt(5120 * 10 / 5) }, mass: 0.1, radius: 2, color: '#888888' },
+    ],
+    G: 5120, frames: hierarchical.frames,
+  },
+  lyapunov: {
+    bodies: [
+      { id: 'b1', position: { x: -80 * 200 / (2000 + 200), y: 0 }, velocity: { x: 0, y: -Math.sqrt(5120 * (2000 + 200) / (80 * 80 * 80)) * (80 * 200 / (2000 + 200)) }, mass: 2000, radius: 20, color: '#ff6b6b' },
+      { id: 'b2', position: { x: 80 * 2000 / (2000 + 200), y: 0 }, velocity: { x: 0, y: Math.sqrt(5120 * (2000 + 200) / (80 * 80 * 80)) * (80 * 2000 / (2000 + 200)) }, mass: 200, radius: 10, color: '#4ecdc4' },
+      { id: 'b3', position: { x: 80 * 2000 / (2000 + 200) - 80 * Math.pow(200 / (3 * 2000), 1/3), y: 0.5 }, velocity: { x: 0, y: Math.sqrt(5120 * (2000 + 200) / (80 * 80 * 80)) * (80 * 2000 / (2000 + 200) - 80 * Math.pow(200 / (3 * 2000), 1/3)) }, mass: 0.001, radius: 1.5, color: '#ffffff' },
+    ],
+    G: 5120, frames: lyapunov.frames,
   },
 }
 const presetOptions = [
   { value: 'figure8', label: t('periodic.figure8Title') },
   { value: 'lagrange', label: t('periodic.lagrangeTitle') },
+  { value: 'hierarchical', label: t('periodic.hierarchicalTitle') },
+  { value: 'lyapunov', label: t('periodic.lyapunovTitle') },
 ]
 
 const currentPreset = ref('figure8')
