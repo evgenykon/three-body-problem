@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { IntegrationMethod } from '~/simulation/Engine'
 import type { BodyConfig, PrecalculatedFrames } from '~/components/ThreeBodySimulation.vue'
-import { fig8, lagrange, hierarchical, lyapunov } from '~/data/precalculated'
+import { fig8, butterfly1, bumblebee, moth1, moth2, moth3, goggles, dragonfly, yarn, yinyang1 } from '~/data/precalculated'
 
 const { t } = useI18n()
 
@@ -12,58 +11,56 @@ definePageMeta({
 
 const simRef = ref<any>(null)
 const isRunning = ref(false)
-const integrationMethod = ref<IntegrationMethod>('precalculated')
-const gravitationalConstant = ref(1)
 const presetKey = ref(0)
-const zoom = ref<number | undefined>(undefined)
+const gravitationalConstant = ref(1)
+const validationResult = ref<string | null>(null)
 
 interface PresetDef {
   bodies: BodyConfig[]
   G: number
-  zoom?: number
   frames: PrecalculatedFrames
+}
+
+function suvakovBodies(vx: number, vy: number): BodyConfig[] {
+  const r = 0.006
+  return [
+    { id: 'b1', position: { x: -1, y: 0 }, velocity: { x: vx, y: vy }, mass: 1, radius: r, color: '#ff6b6b' },
+    { id: 'b2', position: { x: 1, y: 0 },  velocity: { x: vx, y: vy }, mass: 1, radius: r, color: '#4ecdc4' },
+    { id: 'b3', position: { x: 0, y: 0 },  velocity: { x: -2 * vx, y: -2 * vy }, mass: 1, radius: r, color: '#45b7d1' },
+  ]
 }
 
 const presets: Record<string, PresetDef> = {
   figure8: {
     bodies: [
-      { id: 'b1', position: { x: 9.700044, y: -2.430875 }, velocity: { x: 4.662037, y: 4.323657 }, mass: 1, radius: 0.5, color: '#ff6b6b' },
-      { id: 'b2', position: { x: -9.700044, y: 2.430875 }, velocity: { x: 4.662037, y: 4.323657 }, mass: 1, radius: 0.5, color: '#4ecdc4' },
-      { id: 'b3', position: { x: 0, y: 0 }, velocity: { x: -9.324074, y: -8.647315 }, mass: 1, radius: 0.5, color: '#45b7d1' },
+      { id: 'b1', position: { x: 0.97000436, y: -0.24308753 }, velocity: { x: 0.466203685, y: 0.43236573 }, mass: 1, radius: 0.05, color: '#ff6b6b' },
+      { id: 'b2', position: { x: -0.97000436, y: 0.24308753 }, velocity: { x: 0.466203685, y: 0.43236573 }, mass: 1, radius: 0.05, color: '#4ecdc4' },
+      { id: 'b3', position: { x: 0, y: 0 }, velocity: { x: -0.93240737, y: -0.86473146 }, mass: 1, radius: 0.05, color: '#45b7d1' },
     ],
-    G: 1000, zoom: 12, frames: fig8.frames,
+    G: 1, frames: fig8.frames,
   },
-  lagrange: {
-    bodies: [
-      { id: 'b1', position: { x: 80, y: 0 }, velocity: { x: 0, y: Math.sqrt(5120 * 200 / (80 * Math.sqrt(3))) }, mass: 200, radius: 14, color: '#ff6b6b' },
-      { id: 'b2', position: { x: -40, y: 40 * Math.sqrt(3) }, velocity: { x: -Math.sqrt(5120 * 200 / (80 * Math.sqrt(3))) * Math.sqrt(3) / 2, y: -Math.sqrt(5120 * 200 / (80 * Math.sqrt(3))) / 2 }, mass: 200, radius: 14, color: '#4ecdc4' },
-      { id: 'b3', position: { x: -40, y: -40 * Math.sqrt(3) }, velocity: { x: Math.sqrt(5120 * 200 / (80 * Math.sqrt(3))) * Math.sqrt(3) / 2, y: -Math.sqrt(5120 * 200 / (80 * Math.sqrt(3))) / 2 }, mass: 200, radius: 14, color: '#45b7d1' },
-    ],
-    G: 5120, frames: lagrange.frames,
-  },
-
-  hierarchical: {
-    bodies: [
-      { id: 'b1', position: { x: 0, y: 0 }, velocity: { x: 0, y: 0 }, mass: 5000, radius: 30, color: '#ffe66d' },
-      { id: 'b2', position: { x: 100, y: 0 }, velocity: { x: 0, y: Math.sqrt(5120 * 5000 / 100) }, mass: 10, radius: 8, color: '#4ecdc4' },
-      { id: 'b3', position: { x: 105, y: 0 }, velocity: { x: 0, y: Math.sqrt(5120 * 5000 / 100) + Math.sqrt(5120 * 10 / 5) }, mass: 0.1, radius: 2, color: '#888888' },
-    ],
-    G: 5120, frames: hierarchical.frames,
-  },
-  lyapunov: {
-    bodies: [
-      { id: 'b1', position: { x: -80 * 200 / (2000 + 200), y: 0 }, velocity: { x: 0, y: -Math.sqrt(5120 * (2000 + 200) / (80 * 80 * 80)) * (80 * 200 / (2000 + 200)) }, mass: 2000, radius: 20, color: '#ff6b6b' },
-      { id: 'b2', position: { x: 80 * 2000 / (2000 + 200), y: 0 }, velocity: { x: 0, y: Math.sqrt(5120 * (2000 + 200) / (80 * 80 * 80)) * (80 * 2000 / (2000 + 200)) }, mass: 200, radius: 10, color: '#4ecdc4' },
-      { id: 'b3', position: { x: 80 * 2000 / (2000 + 200) - 80 * Math.pow(200 / (3 * 2000), 1/3), y: 0.5 }, velocity: { x: 0, y: Math.sqrt(5120 * (2000 + 200) / (80 * 80 * 80)) * (80 * 2000 / (2000 + 200) - 80 * Math.pow(200 / (3 * 2000), 1/3)) }, mass: 0.001, radius: 1.5, color: '#ffffff' },
-    ],
-    G: 5120, frames: lyapunov.frames,
-  },
+  butterfly1: { bodies: suvakovBodies(0.3068931165215643, 0.1255073111049974), G: 1, frames: butterfly1.frames },
+  bumblebee: { bodies: suvakovBodies(0.18428, 0.58719), G: 1, frames: bumblebee.frames },
+  moth1: { bodies: suvakovBodies(0.46444, 0.39606), G: 1, frames: moth1.frames },
+  moth2: { bodies: suvakovBodies(0.43917, 0.45297), G: 1, frames: moth2.frames },
+  moth3: { bodies: suvakovBodies(0.38344, 0.37736), G: 1, frames: moth3.frames },
+  goggles: { bodies: suvakovBodies(0.08330, 0.12789), G: 1, frames: goggles.frames },
+  dragonfly: { bodies: suvakovBodies(0.08058, 0.58884), G: 1, frames: dragonfly.frames },
+  yarn: { bodies: suvakovBodies(0.55902, 0.34919), G: 1, frames: yarn.frames },
+  yinyang1: { bodies: suvakovBodies(0.51394, 0.30474), G: 1, frames: yinyang1.frames },
 }
+
 const presetOptions = [
-  { value: 'figure8', label: t('periodic.figure8Title') },
-  { value: 'lagrange', label: t('periodic.lagrangeTitle') },
-  { value: 'hierarchical', label: t('periodic.hierarchicalTitle') },
-  { value: 'lyapunov', label: t('periodic.lyapunovTitle') },
+  { value: 'figure8', label: 'Figure-8' },
+  { value: 'butterfly1', label: 'Butterfly I' },
+  { value: 'bumblebee', label: 'Bumblebee' },
+  { value: 'moth1', label: 'Moth I' },
+  { value: 'moth2', label: 'Moth II' },
+  { value: 'moth3', label: 'Moth III' },
+  { value: 'goggles', label: 'Goggles' },
+  { value: 'dragonfly', label: 'Dragonfly' },
+  { value: 'yarn', label: 'Yarn' },
+  { value: 'yinyang1', label: 'Yin-Yang I' },
 ]
 
 const currentPreset = ref('figure8')
@@ -74,11 +71,11 @@ const loadPreset = (name: string) => {
   const p = presets[name]
   if (!p) return
   isRunning.value = false
-  presetBodies.value = [...p.bodies]
+  presetBodies.value = p.bodies.map(b => ({ ...b }))
   gravitationalConstant.value = p.G
-  zoom.value = p.zoom
   precalculatedFrames.value = p.frames
   presetKey.value++
+  validationResult.value = null
 }
 
 watch(currentPreset, (name) => {
@@ -102,6 +99,24 @@ const resetSimulation = () => {
     isRunning.value = false
   }
 }
+
+const validateCurrentOrbit = () => {
+  if (!simRef.value) return
+  const engine = simRef.value.getEngine()
+  if (!engine) return
+  const bodies = engine.getBodies()
+  const cfg = engine.getConfig()
+  let minDist = Infinity
+  for (let i = 0; i < bodies.length; i++) {
+    for (let j = i + 1; j < bodies.length; j++) {
+      const d = Math.hypot(bodies[i].position.x - bodies[j].position.x, bodies[i].position.y - bodies[j].position.y)
+      minDist = Math.min(minDist, d)
+    }
+  }
+  const energy = engine.totalEnergy()
+  const frameCount = simRef.value.frameCount ?? 0
+  validationResult.value = `[Frame ${frameCount}] minDist: ${minDist.toFixed(6)} | energy: ${energy.toFixed(6)} | G=${cfg.gravitationalConstant}`
+}
 </script>
 
 <template>
@@ -113,15 +128,6 @@ const resetSimulation = () => {
         <UiCard>
           <UiCardContent>
             <p class="lead-text">{{ t('periodic.intro') }}</p>
-          </UiCardContent>
-        </UiCard>
-      </section>
-
-      <section class="content-section">
-        <UiHeader :level="2" class="section-title">{{ t('periodic.lagrangeTitle') }}</UiHeader>
-        <UiCard>
-          <UiCardContent>
-            <p>{{ t('periodic.lagrangeText') }}</p>
           </UiCardContent>
         </UiCard>
       </section>
@@ -224,9 +230,8 @@ const resetSimulation = () => {
                 :key="presetKey"
                 ref="simRef"
                 :bodies="presetBodies"
-                :integration-method="integrationMethod"
+                integration-method="precalculated"
                 :gravitational-constant="gravitationalConstant"
-                :zoom="zoom"
                 :auto-start="false"
                 :show-trails="true"
                 :show-vectors="false"
@@ -234,6 +239,10 @@ const resetSimulation = () => {
                 :precalculated-frames="precalculatedFrames"
               />
             </div>
+            <div class="sim-controls" style="margin-top: 8px;">
+              <UiButton variant="ghost" size="sm" @click="validateCurrentOrbit">Validate orbit</UiButton>
+            </div>
+            <p v-if="validationResult" class="validation-result">{{ validationResult }}</p>
           </UiCardContent>
         </UiCard>
       </section>
@@ -258,4 +267,5 @@ const resetSimulation = () => {
 .content-section p + p { margin-top: 8px; }
 .content-section ul { margin: 8px 0 0; padding-left: 20px; line-height: 1.7; color: var(--muted-foreground); font-size: 14px; }
 .content-section li { margin-bottom: 4px; }
+.validation-result { font-size: 11px; color: var(--muted-foreground); margin: 4px 0 8px; font-family: monospace; }
 </style>
