@@ -234,8 +234,8 @@ function zip(id: string, xs: number[], ys: number[]): [string, { x: number; y: n
 
 `
 
-function suvakovCfg(vx, vy) {
-  return { bodies: makeSuvakovBodies(vx, vy), G: 1, dt: DT, softening: SOFT }
+function suvakovCfg(vx, vy, opts = {}) {
+  return { bodies: makeSuvakovBodies(vx, vy), G: 1, dt: opts.dt ?? DT, softening: opts.softening ?? SOFT, sampleEvery: opts.sampleEvery ?? SAMPLE_EVERY }
 }
 
 const presets = [
@@ -247,14 +247,15 @@ const presets = [
   ['Moth III', 'moth3', suvakovCfg(SUV_ORBITS.moth3.vx, SUV_ORBITS.moth3.vy)],
   ['Goggles', 'goggles', suvakovCfg(SUV_ORBITS.goggles.vx, SUV_ORBITS.goggles.vy)],
   ['Dragonfly', 'dragonfly', suvakovCfg(SUV_ORBITS.dragonfly.vx, SUV_ORBITS.dragonfly.vy)],
-  ['Yarn', 'yarn', suvakovCfg(SUV_ORBITS.yarn.vx, SUV_ORBITS.yarn.vy)],
+  ['Yarn', 'yarn', suvakovCfg(SUV_HIGH_PRECISION.yarn.vx, SUV_HIGH_PRECISION.yarn.vy, { dt: 0.00001, sampleEvery: 1600 })],
   ['Yin-Yang I', 'yinyang1', suvakovCfg(SUV_ORBITS.yinyang1.vx, SUV_ORBITS.yinyang1.vy)],
 ]
 
 for (const [name, id, cfg, fixedFrames, forcePeriod] of presets) {
   const doCloseLoop = id === 'moth3'
+  const sampleEvery = cfg.sampleEvery || SAMPLE_EVERY
   console.log(`Generating ${name}...`)
-  const code = buildPresetData(name, id, cfg, SAMPLE_EVERY, fixedFrames ?? null, forcePeriod ?? false, doCloseLoop)
+  const code = buildPresetData(name, id, cfg, sampleEvery, fixedFrames ?? null, forcePeriod ?? false, doCloseLoop)
   if (code) {
     allCode += code + '\n'
   }

@@ -121,6 +121,7 @@ export const SUV_ORBITS = {
 
 export const SUV_HIGH_PRECISION = {
   butterfly1: { vx: 0.3068931165215643, vy: 0.1255073111049974 },
+  yarn:       { vx: 0.559064247131347, vy: 0.349191558837891 },
 }
 
 export const FIG8_CLASSIC = {

@@ -23,6 +23,7 @@ const solutions = [
   { page: 'soln-sundman', label: t('nav.solnSundman'), to: '/solutions/sundman' },
   { page: 'soln-numerical', label: t('nav.solnNumerical'), to: '/solutions/numerical' },
   { page: 'soln-periodic', label: t('nav.solnPeriodic'), to: '/solutions/periodic' },
+  { page: 'soln-homological', label: t('nav.solnHomological'), to: '/solutions/homological' },
   { page: 'soln-ml', label: t('nav.solnMl'), to: '/solutions/ml' },
 ]
 

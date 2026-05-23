@@ -108,20 +108,20 @@ make run cmd="npx prettier --check ." # Formatting check
 
 Precalculated frame data is in `app/data/precalculated.ts` (auto-generated, DO NOT edit manually).
 
-Current presets (G=1, velocity-verlet, dt=0.0001, 601 frames each):
+Current presets (G=1, velocity-verlet):
 
-| Preset | Frames | Type | Notes |
-|--------|--------|------|-------|
-| `fig8` | 1187 | period-matched | Chenciner-Montgomery figure-8, exact ICs, loop dist ~0.001 |
-| `butterfly1` | 391 | period-matched | Suvakov Butterfly I (high precision ICs), loop dist ~0.003 |
-| `bumblebee` | 3000 | fixed frames | Suvakov Bumblebee, no clean period, 50s between loops |
-| `moth1` | 932 | period-matched | Suvakov Moth I, loop dist ~0.005 |
-| `moth2` | 1793 | period-matched | Suvakov Moth II, loop dist ~0.005 |
-| `moth3` | 600 | fixed frames | Suvakov Moth III, unstable beyond 600 frames |
-| `goggles` | 655 | period-matched | Suvakov Goggles, loop dist ~0.009 |
-| `dragonfly` | 3000 | fixed frames | Suvakov Dragonfly, no clean period |
-| `yarn` | 600 | fixed frames | Suvakov Yarn, collision beyond 600 frames |
-| `yinyang1` | 1084 | period-matched | Suvakov Yin-Yang I, loop dist ~0.025 |
+| Preset | Frames | Type | dt / sampleEvery | Notes |
+|--------|--------|------|------------------|-------|
+| `fig8` | 1187 | period-matched | 0.0001 / 160 | Chenciner-Montgomery figure-8, exact ICs, loop dist ~0.004 |
+| `butterfly1` | 391 | period-matched | 0.0001 / 160 | Suvakov Butterfly I (high precision ICs), loop dist ~0.012 |
+| `bumblebee` | 3000 | fixed frames | 0.0001 / 160 | Suvakov Bumblebee, no clean period |
+| `moth1` | 932 | period-matched | 0.0001 / 160 | Suvakov Moth I, loop dist ~0.005 |
+| `moth2` | 1793 | period-matched | 0.0001 / 160 | Suvakov Moth II, loop dist ~0.005 |
+| `moth3` | 600 | fixed frames | 0.0001 / 160 | Suvakov Moth III, unstable beyond 600 frames |
+| `goggles` | 655 | period-matched | 0.0001 / 160 | Suvakov Goggles, loop dist ~0.009 |
+| `dragonfly` | 3000 | fixed frames | 0.0001 / 160 | Suvakov Dragonfly, no clean period |
+| `yarn` | 3470 | period-matched | **0.00001 / 1600** | Suvakov Yarn (high precision ICs, Li & Liao 2014), loop dist ~0.031 |
+| `yinyang1` | 1084 | period-matched | 0.0001 / 160 | Suvakov Yin-Yang I, loop dist ~0.025 |
 
 **Auto-fallback logic**: `build_presets.mjs` tries period matching first. If dist > 0.05, falls back to fixed frames trying [3000, 2000, 1000, 600] (first stable count wins). If none work, uses period with poor closure.
 
@@ -168,6 +168,12 @@ make run cmd="node scripts/test_validation.mjs"
 Rules for generating new precalculated data:
 - Always use G=1 for Suvakov/figure-8 type orbits
 - Use `dt=0.0001`, `softening=0`, `velocity-verlet` 
+- Exception: Yarn requires `dt=0.00001`, `sampleEvery=1600` (high-precision ICs from Li & Liao 2014)
 - Validate with at least 100 frames output (160 substeps each)
 - Energy drift must be < 1 ppm for a valid orbit
 - If collision occurs before 100 frames, initial conditions are invalid
+
+To test Yarn orbit specifically:
+```bash
+make run cmd="node scripts/test_yarn.mjs"
+```
