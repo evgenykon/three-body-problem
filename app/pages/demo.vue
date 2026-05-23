@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 definePageMeta({
   layout: 'default'
@@ -41,6 +41,49 @@ const tabs = [
   { value: 'notifications', label: 'Notifications' },
   { value: 'advanced', label: 'Advanced' },
 ]
+
+const demoPresets = {
+  figureEight: [
+    { id: 'b1', position: { x: 77.6, y: -19.45 }, velocity: { x: -6.59, y: -6.11 }, mass: 200, radius: 15, color: '#ff6b6b' },
+    { id: 'b2', position: { x: -77.6, y: 19.45 }, velocity: { x: -6.59, y: -6.11 }, mass: 200, radius: 15, color: '#4ecdc4' },
+    { id: 'b3', position: { x: 0, y: 0 }, velocity: { x: 13.18, y: 12.23 }, mass: 200, radius: 15, color: '#45b7d1' },
+  ],
+  triangle: [
+    { id: 'b1', position: { x: 80, y: 0 }, velocity: { x: 0, y: 10.75 }, mass: 200, radius: 15, color: '#ff6b6b' },
+    { id: 'b2', position: { x: -40, y: 69.28 }, velocity: { x: -9.31, y: -5.37 }, mass: 200, radius: 15, color: '#4ecdc4' },
+    { id: 'b3', position: { x: -40, y: -69.28 }, velocity: { x: 9.31, y: -5.37 }, mass: 200, radius: 15, color: '#45b7d1' },
+  ],
+}
+const simBodies = ref(demoPresets.figureEight)
+const simPreset = ref('figureEight')
+const simIntegration = ref('velocity-verlet')
+const simG = ref(80)
+const simTrailLen = ref(200)
+const simShowTrails = ref(true)
+const simAutoStart = ref(true)
+const simZoom = ref(0.65)
+const simTimeStep = ref(0.016)
+const simStepsPerFrame = ref(1)
+const simSoftening = ref(5)
+const simShowVectors = ref(true)
+
+const integrationOptions = [
+  { value: 'euler', label: 'Euler' },
+  { value: 'rk4', label: 'RK4' },
+  { value: 'velocity-verlet', label: 'Velocity-Verlet' },
+]
+const presetOptions = [
+  { value: 'figureEight', label: 'Figure-Eight' },
+  { value: 'triangle', label: 'Lagrange Triangle' },
+]
+
+watch(simPreset, (val) => {
+  simBodies.value = demoPresets[val as keyof typeof demoPresets]
+})
+
+const simCode = computed(() =>
+  `<ThreeBodySimulation\n  :bodies="bodies"\n  integration-method="${simIntegration.value}"\n  gravitational-constant="${simG.value}"\n  :auto-start="${simAutoStart.value}"\n  :show-trails="${simShowTrails.value}"\n  :show-vectors="${simShowVectors.value}"\n  :trail-length="${simTrailLen.value}"\n  :zoom="${simZoom.value}"\n  :time-step="${simTimeStep.value}"\n  :steps-per-frame="${simStepsPerFrame.value}"\n  :softening="${simSoftening.value}"\n/>`
+)
 
 const tableColumns = [
   { key: 'name', label: 'Name' },
@@ -184,5 +227,136 @@ const tableData = [
         </UiCard>
       </section>
     </div>
+
+    <section class="mt-8">
+      <UiHeader :level="2" class="mb-4">Simulation Component</UiHeader>
+      <p class="text-sm text-muted-foreground mb-4">
+        Reactive demo of <code>ThreeBodySimulation</code> — tweak controls and watch the simulation respond:
+      </p>
+
+      <div class="sim-layout">
+        <div class="sim-canvas-wrap">
+          <ThreeBodySimulation
+            :bodies="simBodies"
+            :integration-method="simIntegration"
+            :gravitational-constant="simG"
+            :auto-start="simAutoStart"
+            :show-trails="simShowTrails"
+            :show-vectors="simShowVectors"
+            :trail-length="simTrailLen"
+            :zoom="simZoom"
+            :time-step="simTimeStep"
+            :steps-per-frame="simStepsPerFrame"
+            :softening="simSoftening"
+          />
+        </div>
+
+        <UiCard class="sim-controls">
+          <UiCardContent class="form-group">
+            <div class="form-row">
+              <UiLabel>Preset</UiLabel>
+              <UiSelect v-model="simPreset" :options="presetOptions" />
+            </div>
+            <div class="form-row">
+              <UiLabel>Method</UiLabel>
+              <UiSelect v-model="simIntegration" :options="integrationOptions" />
+            </div>
+            <div class="form-row">
+              <UiLabel>G</UiLabel>
+              <UiInput :value="simG" type="number" step="1" @update:value="simG = Number($event)" />
+            </div>
+            <div class="form-row">
+              <UiLabel>Trail len</UiLabel>
+              <UiInput :value="simTrailLen" type="number" step="50" @update:value="simTrailLen = Number($event)" />
+            </div>
+            <div class="form-row">
+              <UiLabel>Time step</UiLabel>
+              <UiInput :value="simTimeStep" type="number" step="0.001" @update:value="simTimeStep = Number($event)" />
+            </div>
+            <div class="form-row">
+              <UiLabel>Steps/frame</UiLabel>
+              <UiInput :value="simStepsPerFrame" type="number" step="1" @update:value="simStepsPerFrame = Number($event)" />
+            </div>
+            <div class="form-row">
+              <UiLabel>Softening</UiLabel>
+              <UiInput :value="simSoftening" type="number" step="1" @update:value="simSoftening = Number($event)" />
+            </div>
+            <div class="form-row">
+              <UiLabel>Zoom</UiLabel>
+              <UiInput :value="simZoom" type="number" step="0.05" @update:value="simZoom = Number($event)" />
+            </div>
+            <div class="form-row">
+              <UiCheckbox v-model="simShowTrails" label="Trails" />
+            </div>
+            <div class="form-row">
+              <UiCheckbox v-model="simShowVectors" label="Vectors" />
+            </div>
+            <div class="form-row">
+              <UiCheckbox v-model="simAutoStart" label="Auto start" />
+            </div>
+          </UiCardContent>
+        </UiCard>
+      </div>
+
+      <pre class="code-block"><code>{{ simCode }}</code></pre>
+    </section>
   </UiContainer>
 </template>
+
+<style scoped>
+.sim-layout {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.sim-canvas-wrap {
+  height: 400px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.sim-controls :deep(.rounded-lg) {
+  border: none;
+  box-shadow: none;
+}
+.sim-controls :deep(.border) {
+  border: 1px solid var(--border);
+}
+.sim-controls .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sim-controls .form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.sim-controls .form-row:has(.aa-checkbox) {
+  flex-direction: row;
+  align-items: center;
+}
+.code-block {
+  padding: 12px 14px;
+  background: var(--muted);
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap;
+}
+.code-block code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: var(--foreground);
+}
+.mt-8 { margin-top: 2rem; }
+.mb-4 { margin-bottom: 16px; }
+
+@media (max-width: 720px) {
+  .sim-layout {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

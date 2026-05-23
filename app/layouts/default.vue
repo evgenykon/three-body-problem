@@ -69,19 +69,6 @@ const locales = [
             {{ item.label }}
           </div>
         </div>
-        
-        <UiHeader :level="4" class="mt-4">{{ t('nav.simulations') }}</UiHeader>
-        <div class="flex flex-col gap-1 mt-2">
-          <div
-            v-for="item in simulations"
-            :key="item.page"
-            class="nav-item"
-            :class="{ 'nav-item--active': isActive(item.to) }"
-            @click="navigate(item.to)"
-          >
-            {{ item.label }}
-          </div>
-        </div>
 
         <UiHeader :level="4" class="mt-4">{{ t('nav.solutions') }}</UiHeader>
         <div class="flex flex-col gap-1 mt-2">
@@ -91,6 +78,20 @@ const locales = [
             class="nav-item"
             :class="{ 'nav-item--active': isActive(item.to) }"
             @click="navigate(item.to)"
+          >
+            {{ item.label }}
+          </div>
+        </div>
+
+
+        <UiHeader :level="4" class="mt-4">{{ t('nav.simulations') }}</UiHeader>
+        <div class="flex flex-col gap-1 mt-2">
+          <div
+              v-for="item in simulations"
+              :key="item.page"
+              class="nav-item"
+              :class="{ 'nav-item--active': isActive(item.to) }"
+              @click="navigate(item.to)"
           >
             {{ item.label }}
           </div>
